@@ -1,0 +1,21 @@
+{
+  "mongodb": {
+    "host": "localhost",
+    "port": 27017,
+    "database": "roseltorg",
+    "collection": "notifications"
+  },
+  "rabbitmq": {
+    "host": "localhost",
+    "port": 5672,
+    "username": "user",
+    "password": "123456",
+    "queue": "tender-upsert"
+  },
+  "proxy": {
+    "enabled": false,
+    "host": "",
+    "login": "",
+    "password": ""
+  },
+  "sleep_time": 120}
