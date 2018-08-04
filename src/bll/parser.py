@@ -23,11 +23,22 @@ class Parser:
         if not date_str:
             return None
         try:
-            date = re.search(r'\d\d\.\d\d\.\d\d', date_str).group(0)
-            time = re.search(r'\d\d:\d\d', date_str).group(0)
+            date = re.search(r'\d\d\.\d\d\.\d\d\d\d', date_str).group(0)
         except AttributeError:
             return None
-        return '{} {}'.format(date, time)
+
+        try:
+            time = re.search(r'\d\d:\d\d', date_str).group(0)
+        except AttributeError:
+            time = ''
+
+        date_time_str = '{} {}'.format(date, time).strip()
+
+        try:
+            time_delta = int(re.search(r'\+\d\d', date_str).group(0).replace('\+', '').lstrip('0'))
+        except AttributeError:
+            return date_time_str, None
+        return date_time_str, time_delta
 
     @staticmethod
     def clear_double_data_str(data_str):
@@ -223,6 +234,7 @@ class Parser:
                 'display_name': self.clear_attachment_display_name(file.find('a').text),
                 'url': file.find('a').attrs['href'],
                 'real_name': file.find('a').text,
-                'publication_date': file.find('time').text,
+                'publication_date': self.clear_date_str(file.find('time').text),
             })
+        print(attachments)
         return attachments
