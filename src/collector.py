@@ -18,6 +18,7 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
+        """
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
@@ -26,7 +27,7 @@ class Collector:
                                          rabbitmq['port'],
                                          rabbitmq['username'],
                                          rabbitmq['password'],
-                                         rabbitmq['queue'])
+                                         rabbitmq['queue'])"""
 
     def collect(self):
         """
@@ -41,7 +42,7 @@ class Collector:
         # Обработка тендеров
         count = 0
         for tender_data_list in tender_data_list_gen:
-            tender_items_list = self.parser.get_part_data(tender_data_list)
+            tender_items_list = self.parser.get_parsed_items_list(tender_data_list)
             total = len(tender_items_list)
             for i, item in enumerate(tender_items_list):
                 if self.publish_date:
@@ -68,12 +69,17 @@ class Collector:
         * Проверяем в базе есть ли идентичная запись
         * Если что-то поменялось (статус), то обновляем в базе и отсылаем в очередь
           Иначе пропускаем
+        pass
         """
         # Получение HTML страницы с данными тендера
         tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
-        multilot = True if len(tender_lots) > 1 else False
         org = self.parser.get_org_data(tender_data_html)
+        #print(tender_lots)
+        #print(org)
+        """
+        multilot = True if len(tender_lots) > 1 else False
+        
         attachments = self.parser.get_attachments(tender_data_html)
         #print(item, tender_lots, org, attachments, multilot)
 
@@ -97,4 +103,4 @@ class Collector:
 
                 # отправляем в RabbitMQ
                 self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')
+                print('Published to RabbitMQ')"""

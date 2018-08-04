@@ -13,7 +13,7 @@ class Http:
     source_url = 'http://www.zakupki.bgkrb.ru/purchase/'
 
     init_params = {
-        'catalog_filter': 151,
+        'catalog_filter': 150,
         'PAGEN_1': 1, #1207
     }
 
@@ -26,8 +26,8 @@ class Http:
                 html = BeautifulSoup(res.content, 'lxml')
                 next_page_exist = html.find('a', class_='paginator_list_right')
                 print(next_page_exist, self.init_params['PAGEN_1'])
+                yield html.find('div', class_='news-list').find_all('tr')
                 if next_page_exist:
-                    yield html.find('div', class_='news-list').find_all('tr')
                     self.init_params['PAGEN_1'] += 1
                 else:
                     break
