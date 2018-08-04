@@ -10,29 +10,27 @@ class Http:
         else:
             self.proxy = None
 
-    source_url = 'https://etpgpb.ru/procedures/page/{}/?procedure[category]=actual&procedure[section][0]' \
-                 '=common&procedure[section][1]=gazprom'
+    source_url = 'http://www.zakupki.bgkrb.ru/purchase/'
+
+    init_params = {
+        'catalog_filter': 151,
+        'PAGEN_1': 1, #1207
+    }
 
     def get_tender_list(self):
         """генератор списков тендеров"""
-        page = 1
         while True:
-            #print(page)
-            page_url = self.source_url.format(page)
-            r = get(page_url, proxies=self.proxy)
+            r = get(self.source_url, params=self.init_params, proxies=self.proxy)
             res = retry(r, 5, 100)
             if res is not None and res.status_code == 200:
                 html = BeautifulSoup(res.content, 'lxml')
-                #items_div = html.find('div', class_='block__related block__related_big hidden')
-                items_div = html.find('div', {'data-view': 'full'})
-                if items_div:
-                    items_data_list = items_div.find_all('a')
-                    yield items_data_list
-                    page += 1
+                next_page_exist = html.find('a', class_='paginator_list_right')
+                print(next_page_exist, self.init_params['PAGEN_1'])
+                if next_page_exist:
+                    yield html.find('div', class_='news-list').find_all('tr')
+                    self.init_params['PAGEN_1'] += 1
                 else:
                     break
-            elif res.status_code == 500:
-                break
 
     def get_tender_data(self, url):
         """данные отдельного тендера"""
