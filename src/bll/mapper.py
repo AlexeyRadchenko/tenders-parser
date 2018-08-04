@@ -41,14 +41,13 @@ class Mapper:
             lot['customer'] if lot['customer'] else ''
         )
 
-    @staticmethod
-    def get_attachments(files):
+    def get_attachments(self, files):
         attachments = []
         for file in files:
             attachments.append({
                 'displayName': file['display_name'],
                 'href': file['url'],
-                'publicationDateTime': file['publication_date'],
+                'publicationDateTime': self.tools.get_utc_epoch(file['publication_date'], time_delta=3),
                 'realName': file['real_name'],
                 'size': None
             })
@@ -85,7 +84,7 @@ class Mapper:
             # Массив ОКПД2 (если присутствует)
             'okpd': [],
             # Массив ОКДП (если присутствует)
-            'okpd2': lot['okpd2'],
+            'okpd2': [i.split()[0] for i in lot['okpd2']],
             'orderName': item['name'],
             'organisationsSearch': self.get_organisations_search(lot, org),
             'placingWay': self.get_placingway(item['type']),
@@ -94,12 +93,12 @@ class Mapper:
                 'name': 'ЭТП ГПБ',
             },
             # Дата публикации тендера UNIX EPOCH (UTC)
-            'publicationDateTime': self.tools.get_utc_epoch(lot['publication_date']),
+            'publicationDateTime': self.tools.get_utc_epoch(lot['publication_date'], time_delta=3),
             'region': int(org['region']) if org['region'] else None,
             # Дата окончания подачи заявок UNIX EPOCH (UTC)
-            'submissionCloseDateTime': self.tools.get_utc_epoch(lot['sub_close_date']),
+            'submissionCloseDateTime': self.tools.get_utc_epoch(lot['sub_close_date'], time_delta=3),
             # Дата начала подачи заявок UNIX EPOCH (UTC)
-            'submissionStartDateTime': self.tools.get_utc_epoch(lot['publication_date']),
+            'submissionStartDateTime': self.tools.get_utc_epoch(lot['publication_date'], time_delta=3),
             'tenderSearch': self.get_tender_search(item, lot),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
@@ -291,7 +290,7 @@ class Mapper:
                         name='ScoringStartDateTime',
                         displayName='Дата и время вскрытия заявок',
                         value=self.tools.get_utc_epoch(
-                            lot['order_view_date'] if lot['order_view_date'] else None),
+                            lot['order_view_date'] if lot['order_view_date'] else None, time_delta=3),
                         type=FieldType.DateTime,
                         modifications=[]
                     )
@@ -299,7 +298,8 @@ class Mapper:
                     Field(
                         name='ScoringEndDateTime',
                         displayName='Дата подведения итогов',
-                        value=self.tools.get_utc_epoch(lot['scoring_date'] if lot['scoring_date'] else None),
+                        value=self.tools.get_utc_epoch(
+                            lot['scoring_date'] if lot['scoring_date'] else None, time_delta=3),
                         type=FieldType.DateTime,
                         modifications=[]
                     )
@@ -307,8 +307,8 @@ class Mapper:
                     Field(
                         name='TradeDateTime',
                         displayName='Дата проведения торгов',
-                        value=self.tools.get_utc_epoch(lot['trade_date'] if lot['trade_date'] else None),
-                        type=FieldType.DateTime,
+                        value=self.tools.get_utc_epoch(lot['trade_date'] if lot['trade_date'] else None, time_delta=3),
+                        type=FieldType.Date,
                         modifications=[]
                     )
                 )
