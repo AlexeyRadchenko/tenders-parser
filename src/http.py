@@ -13,19 +13,19 @@ class Http:
     source_url = 'http://www.zakupki.bgkrb.ru/purchase/'
 
     init_params = {
-        'catalog_filter': 150,
+        'catalog_filter': 150, # 150 - актуальные, 151 - архив, 0 - все
         'PAGEN_1': 1, #1207
     }
 
     def get_tender_list(self):
         """генератор списков тендеров"""
         while True:
+            print('page', self.init_params['PAGEN_1'])
             r = get(self.source_url, params=self.init_params, proxies=self.proxy)
             res = retry(r, 5, 100)
             if res is not None and res.status_code == 200:
                 html = BeautifulSoup(res.content, 'lxml')
                 next_page_exist = html.find('a', class_='paginator_list_right')
-                print(next_page_exist, self.init_params['PAGEN_1'])
                 yield html.find('div', class_='news-list').find_all('tr')
                 if next_page_exist:
                     self.init_params['PAGEN_1'] += 1

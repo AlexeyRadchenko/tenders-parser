@@ -61,16 +61,16 @@ class Tools:
             datetime_string = ' '.join(itemgetter(*index)(date_string.split(' ')))
             try:
                 date = datetime.strptime(datetime_string.replace('\n','').replace('\t','').replace('\r',''),
-                                         '%d.%m.%y %H:%M:%S') - timedelta(hours=5)
+                                         '%d.%m.%Y %H:%M:%S') - timedelta(hours=5)
             except ValueError:
                 date = datetime.strptime(datetime_string.replace('\n', '').replace('\t', '').replace('\r', '') + ':00',
-                                         '%d.%m.%y %H:%M:%S') - timedelta(hours=5)
+                                         '%d.%m.%Y %H:%M:%S') - timedelta(hours=5)
         elif len(parts_date) == 2:
             date = datetime.strptime(date_string.replace('\n', '').replace('\t', '').replace('\r', ''),
-                                     '%d.%m.%y %H:%M') - timedelta(hours=5)
+                                     '%d.%m.%Y %H:%M:%S') - timedelta(hours=5)
         else:
             date = datetime.strptime(date_string.replace('\n','').replace('\t','').replace('\r',''),
-                                     '%d.%m.%y') - timedelta(hours=5)
+                                     '%d.%m.%Y') - timedelta(hours=5)
 
         epoch_time = (date - datetime(1970, 1, 1)).total_seconds() * 1000
         return int(epoch_time)

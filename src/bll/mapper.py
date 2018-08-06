@@ -12,7 +12,7 @@ class Mapper:
         self.tools = Tools()
 
     @staticmethod
-    def get_organisations_search(lot, org):
+    def get_organisations_search(lot):
         """на roseltorg.ru кпп не указано"""
         return lot['customer'] if lot['customer'] else ''
 
@@ -21,40 +21,37 @@ class Mapper:
         return [{
             'guid': None,
             'name': lot['customer'] if lot['customer'] else org['name'],
-            'region': int(org['region']) if org['region'] else None
+            'region': lot['region']
         }]
 
     @staticmethod
     def get_global_search(item, lot):
         return '{} {} {} {}'.format(
             item['number'],
-            item['name'] if item['name'] else '',
+            lot['name'] if lot['name'] else '',
             lot['customer'] if lot['customer'] else '',
-            item['type'] if item['type'] else ''
+            lot['type'] if lot['type'] else ''
         )
 
     @staticmethod
     def get_tender_search(item, lot):
         return '{} {} {}'.format(
             item['number'] if item['number'] else '',
-            item['name'] if item['name'] else lot['name'],
+            lot['name'] if lot['name'] else '',
             lot['customer'] if lot['customer'] else ''
         )
 
-    @staticmethod
-    def get_attachments(files):
-        attachments = []
-        for file in files:
-            attachments.append({
-                'displayName': file['display_name'],
-                'href': file['url'],
-                'publicationDateTime': file['publication_date'],
-                'realName': file['real_name'],
+    def get_attachments(self, lot, item):
+        attachments = [{
+                'displayName': None,
+                'href': lot['doc'],
+                'publicationDateTime': self.tools.get_utc_epoch(item['publication_datetime']),
+                'realName': None,
                 'size': None
-            })
+            }]
         return attachments
 
-    def map(self, item, multilot, org, attachments, lot, tender_lot_id):
+    def map(self, item, multilot, org, lot, tender_lot_id):
         """
         Функция маппинга итоговой модели
         """
@@ -62,7 +59,7 @@ class Mapper:
         model = {
             # Идентификатор тендера (Тендер+Лот)
             # Для каждого лота в тендере создается отдельная модель
-            'id': tender_lot_id,
+            'id': int(item['number']),
             # Массив заказчиков
             # [{
             #   guid = идентификатор организации (str/None),
@@ -71,9 +68,9 @@ class Mapper:
             # }]
             'customers': self.get_customer_model_list(lot, org),
             # массив документов
-            'attachments': self.get_attachments(attachments),
+            'attachments': self.get_attachments(lot, item),
             'globalSearch': self.get_global_search(item, lot),
-            'guaranteeApp': lot['guarantee_app'],
+            'guaranteeApp': None,
             'href': item['link'],
             'json': None,
             # Максимальная (начальная) цена тендера
@@ -85,30 +82,32 @@ class Mapper:
             # Массив ОКПД2 (если присутствует)
             'okpd': [],
             # Массив ОКДП (если присутствует)
-            'okpd2': lot['okpd2'],
-            'orderName': item['name'],
-            'organisationsSearch': self.get_organisations_search(lot, org),
-            'placingWay': self.get_placingway(item['type']),
+            'okpd2': [],
+            'orderName': lot['name'],
+            'organisationsSearch': self.get_organisations_search(lot),
+            'placingWay': self.get_placingway(lot['type']),
             'platform': {
-                'href': 'https://etpgpb.ru/',
-                'name': 'ЭТП ГПБ',
+                'href': 'http://www.zakupki.bgkrb.ru',
+                'name': 'Башкирская генерирующая компания',
             },
             # Дата публикации тендера UNIX EPOCH (UTC)
-            'publicationDateTime': self.tools.get_utc_epoch(lot['publication_date']),
-            'region': int(org['region']) if org['region'] else None,
+            'publicationDateTime': self.tools.get_utc_epoch(item['publication_datetime']),
+            'region': lot['region'],
             # Дата окончания подачи заявок UNIX EPOCH (UTC)
-            'submissionCloseDateTime': self.tools.get_utc_epoch(lot['sub_close_date']),
+            'submissionCloseDateTime': self.tools.get_utc_epoch(item['close_sub_datetime']),
             # Дата начала подачи заявок UNIX EPOCH (UTC)
-            'submissionStartDateTime': self.tools.get_utc_epoch(lot['publication_date']),
+            'submissionStartDateTime': self.tools.get_utc_epoch(item['start_sub_datetime']),
             'tenderSearch': self.get_tender_search(item, lot),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
-            'status': self.get_status(lot['status']),
+            'status': 0,
             # Версия извещения
             # Если на площадке нет версии, то ставить 1
             'version': 1,
             'kind': 0,
-            'type': 18,
+            'type': 30,
+            'ktru': [],
+            'prepayment': 'double',
         }
 
         model['json'] = self.get_json(
@@ -143,22 +142,18 @@ class Mapper:
         #     Иной однолотовый способ = 18
         """
 
-        if org_form in ['Аукцион на повышение', 'Аукцион на понижение']:
+        if org_form in ['аукцион']:
             return 15
-        elif org_form in ['Запрос предложений']:
+        elif org_form in ['запрос предложений']:
             return 14
-        elif org_form in ['Запрос цен']:
+        elif org_form in ['запрос цен']:
             return 16
-        elif org_form in ['Попозиционные торги']:
+        elif org_form in ['оперативные закупки', 'Конкурентные переговоры', 'квалификационный отбор']:
             return 18
-        elif org_form in ['Запрос котировок']:
+        elif org_form in ['запрос котировок']:
             return 4
-        elif org_form in ['Предварительный отбор']:
-            return 5
-        elif org_form in ['Конкурс']:
+        elif org_form in ['конкурс']:
             return 1
-        elif org_form in ['Открытая тендерная закупка в электронной форме']:
-            return 16
         else:
             return 5000
 
@@ -178,9 +173,6 @@ class Mapper:
         #   Приостановлено определение поставщика = 8
         т.к. на площадке присутствуют не все виды, то 
         задействованы только присутствующие
-
-            status[
-            , , , , , , , ]
         """
 
         if string is None or string.strip() == '':
