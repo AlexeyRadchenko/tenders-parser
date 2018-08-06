@@ -238,19 +238,12 @@ class Mapper:
                         displayName='Объекты закупки'
                     ).set_header(
                         lambda th: th.add_cells([
-                            Head(name='Position', displayName='Позиция'),
                             Head(name='Name', displayName='Наименования товара, работы, услуги'),
                             Head(name='Count', displayName='Количество')
                         ])
                     ).add_rows(
                         [element for element in enumerate(lot['positions'], start=1)],
                         lambda el, row: row.add_cells([
-                            Cell(
-                                name='Position',
-                                type=FieldType.String,
-                                value=str(el[0]),
-                                modifications=[]
-                            ),
                             Cell(
                                 name='Name',
                                 type=FieldType.String,
