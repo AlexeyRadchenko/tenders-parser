@@ -236,5 +236,5 @@ class Parser:
                 'real_name': file.find('a').text,
                 'publication_date': self.clear_date_str(file.find('time').text),
             })
-        print(attachments)
+        #print(attachments)
         return attachments
