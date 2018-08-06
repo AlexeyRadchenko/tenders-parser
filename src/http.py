@@ -23,7 +23,6 @@ class Http:
             res = retry(r, 5, 100)
             if res is not None and res.status_code == 200:
                 html = BeautifulSoup(res.content, 'lxml')
-                #items_div = html.find('div', class_='block__related block__related_big hidden')
                 items_div = html.find('div', {'data-view': 'full'})
                 if items_div:
                     items_data_list = items_div.find_all('a')

@@ -18,7 +18,6 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
-        """
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
@@ -27,7 +26,7 @@ class Collector:
                                          rabbitmq['port'],
                                          rabbitmq['username'],
                                          rabbitmq['password'],
-                                         rabbitmq['queue'])"""
+                                         rabbitmq['queue'])
 
     def collect(self):
         """
@@ -71,8 +70,7 @@ class Collector:
           Иначе пропускаем
         """
         # Получение HTML страницы с данными тендера
-        tender_data_html = self.http.get_tender_data('https://etpgpb.ru/procedure/tender/etp/168833-zakupka-podshipnikov/')
-        #tender_data_html = self.http.get_tender_data(item['link'])
+        tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
         multilot = True if len(tender_lots) > 1 else False
         org = self.parser.get_org_data(tender_data_html)
@@ -81,11 +79,11 @@ class Collector:
 
         for lot in tender_lots:
             tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
-            #dbmodel = self.repository.get_one(tender_lot_id)
-            #if dbmodel is None or dbmodel['status'] != lot['status']:
-            if True:
+            dbmodel = self.repository.get_one(tender_lot_id)
+            if dbmodel is None or dbmodel['status'] != lot['status']:
+            #if True:
                 model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
-                print(model)
+                #print(model)
                 
                 short_model = {
                     '_id': model['id'],
@@ -93,10 +91,10 @@ class Collector:
                 }
 
                 # добавляем/обновляем в MongoDB
-                """
+
                 self.repository.upsert(short_model)
                 print('Upserted in MongoDB')
 
                 # отправляем в RabbitMQ
                 self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')"""
+                print('Published to RabbitMQ')

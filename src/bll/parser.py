@@ -170,7 +170,7 @@ class Parser:
                     )
                 ),
                 'payment_terms': self.find_lot_row(
-                    lot_div, 'Условия договора', 'Условия оплаты и поставки товаров/выполнения работ/оказания услуг'),
+                    lot_div, 'Условия договора', 'Условия оплаты и поставки товаров/выполнения работ/оказания услуг'),
                 'quantity': self.find_lot_row(
                     lot_div, 'Условия договора',
                     'Количество поставляемого товара/объем выполняемых работ/оказываемых услуг'
@@ -197,7 +197,6 @@ class Parser:
                 'positions': self.get_lot_positions(lot_div),
                 'okpd2': self.get_lot_okpd_okved(lot_div, okpd2=True),
             })
-        print(lots[0]['payment_terms'])
         return lots
 
     @staticmethod
