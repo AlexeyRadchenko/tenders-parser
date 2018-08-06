@@ -34,8 +34,14 @@ class Parser:
 
         date_time_str = '{} {}'.format(date, time).strip()
 
+
         try:
-            time_delta = int(re.search(r'\+\d\d', date_str).group(0).replace('\+', '').lstrip('0'))
+            if 'GMT' not in date_str:
+                time_delta = int(re.search(r'\+\d\d', date_str).group(0).replace('\+', '').lstrip('0'))
+            else:
+                time_delta = int(
+                    re.search(
+                        r'\+\d+', date_str.replace(date, '').replace(time, '')).group(0).replace('\+', '').lstrip('0'))
         except AttributeError:
             return date_time_str, None
         return date_time_str, time_delta
@@ -153,7 +159,7 @@ class Parser:
                 ),
                 'sub_close_date': self.clear_date_str(
                     self.find_lot_row(lot_div,
-                                      'Этапы закупочной процедуры', 'Дата и время окончания срока приема заявок'),
+                                      'Этапы закупочной процедуры', 'Дата и время окончания срока приема заявок')
                 ),
                 'price': self.clear_double_data_str(
                     self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Начальная цена')
@@ -182,7 +188,7 @@ class Parser:
                     ''.join(
                         data_html.find(
                             'div', class_='block__docs_container').find('p', class_='datePublished').findAll(text=True)
-                    )
+                    ),
                 ),
                 'trade_date': self.clear_date_str(
                     self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время проведения')

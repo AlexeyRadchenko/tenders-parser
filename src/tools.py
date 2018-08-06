@@ -57,6 +57,7 @@ class Tools:
         if date_string is None or date_string.strip() == '':
             return None
         parts_date = date_string.split(' ')
+        #print('one', date_string, time_delta)
         if len(parts_date) > 2:
             index = (0, 1)
             datetime_string = ' '.join(itemgetter(*index)(date_string.split(' ')))
