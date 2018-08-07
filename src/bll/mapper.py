@@ -51,7 +51,7 @@ class Mapper:
             }]
         return attachments
 
-    def map(self, item, multilot, org, lot, tender_lot_id):
+    def map(self, item, multilot, org, lot):
         """
         Функция маппинга итоговой модели
         """
@@ -217,7 +217,7 @@ class Mapper:
                     guarantee_app=model['guaranteeApp'],
                     guarantee_contract=None,
                     customer_guid=model['customers'][0]['guid'],
-                    customer_name=model['customers'][0]['name']
+                    customer_name=model['customers'][0]['name'],
                 )
             ).add_category(
                 lambda c: c.set_properties(
@@ -229,29 +229,15 @@ class Mapper:
                         displayName='Объекты закупки'
                     ).set_header(
                         lambda th: th.add_cells([
-                            Head(name='Position', displayName='Позиция'),
-                            Head(name='Name', displayName='Наименования товара, работы, услуги'),
-                            Head(name='Count', displayName='Количество')
+                            Head(name='Name', displayName='Наименование')
                         ])
                     ).add_rows(
-                        [element for element in enumerate(lot['positions'], start=1)],
+                        [lot['name']],
                         lambda el, row: row.add_cells([
-                            Cell(
-                                name='Position',
-                                type=FieldType.String,
-                                value=str(el[0]),
-                                modifications=[]
-                            ),
                             Cell(
                                 name='Name',
                                 type=FieldType.String,
-                                value=el[1].get('name').strip('"'),
-                                modifications=[]
-                            ),
-                            Cell(
-                                name='Count',
-                                type=FieldType.String,
-                                value=el[1].get('quantity'),
+                                value=el,
                                 modifications=[]
                             )
                         ])
@@ -264,44 +250,19 @@ class Mapper:
                     modifications=[]
                 ).add_field(
                     Field(
-                        name='PublicationtDateTime',
-                        displayName='Дата публикации',
-                        value=model['publicationDateTime'],
+                        name='AcceptOrderStartDateTime',
+                        displayName='Дата начала приема заявок',
+                        value=model['submissionStartDateTime'],
                         type=FieldType.DateTime,
                         modifications=[Modification.Calendar]
                     )
                 ).add_field(
                     Field(
                         name='AcceptOrderEndDateTime',
-                        displayName='Дата и время окончания срока приема заявок',
+                        displayName='Дата окончания приема заявок',
                         value=model['submissionCloseDateTime'],
                         type=FieldType.DateTime,
                         modifications=[Modification.Calendar]
-                    )
-                ).add_field(
-                    Field(
-                        name='ScoringStartDateTime',
-                        displayName='Дата и время вскрытия заявок',
-                        value=self.tools.get_utc_epoch(
-                            lot['order_view_date'] if lot['order_view_date'] else None),
-                        type=FieldType.DateTime,
-                        modifications=[]
-                    )
-                ).add_field(        #
-                    Field(
-                        name='ScoringEndDateTime',
-                        displayName='Дата подведения итогов',
-                        value=self.tools.get_utc_epoch(lot['scoring_date'] if lot['scoring_date'] else None),
-                        type=FieldType.DateTime,
-                        modifications=[]
-                    )
-                ).add_field(
-                    Field(
-                        name='TradeDateTime',
-                        displayName='Дата проведения торгов',
-                        value=self.tools.get_utc_epoch(lot['trade_date'] if lot['trade_date'] else None),
-                        type=FieldType.DateTime,
-                        modifications=[]
                     )
                 )
             ).add_category(
@@ -313,20 +274,6 @@ class Mapper:
                     name='Organization',
                     displayName='Организация',
                     value=org['name'],
-                    type=FieldType.String,
-                    modifications=[]
-                    )
-                ).add_field(Field(
-                    name='ActualAddress',
-                    displayName='Фактический адрес',
-                    value=org['actual_address'],
-                    type=FieldType.String,
-                    modifications=[]
-                    )
-                ).add_field(Field(
-                    name='PostAddress',
-                    displayName='Почтовый адрес',
-                    value=org['post_address'],
                     type=FieldType.String,
                     modifications=[]
                     )
@@ -356,30 +303,13 @@ class Mapper:
                         type=FieldType.String,
                         modifications=[Modification.Email]
                         )
+                    ).add_field(Field(
+                        name='CustomerPlace',
+                        displayName='Адрес местонахождения',
+                        value='Башкортостан',
+                        type=FieldType.String,
+                        modifications=[]
+                        )
                     )
-                )
-            ).add_general(
-                lambda f: f.set_properties(
-                    name='Quantity',
-                    displayName='Количество поставляемого товара/объем выполняемых работ/оказываемых услуг',
-                    value=lot['quantity'],
-                    type=FieldType.String,
-                    modifications=[]
-                )
-            ).add_general(
-                lambda f: f.set_properties(
-                    name='deliveryPlace',
-                    displayName='Место поставки товаров оказания услуг',
-                    value=lot['delivery_place'] if lot['delivery_place'] else '',
-                    type=FieldType.String,
-                    modifications=[]
-                )
-            ).add_general(
-                lambda f: f.set_properties(
-                    name='PaymentTerms',
-                    displayName='Условия оплаты и поставки товаров/выполнения работ/оказания услуг',
-                    value=lot['payment_terms'] if lot['payment_terms'] else '',
-                    type=FieldType.String,
-                    modifications=[]
                 )
             ).to_json()

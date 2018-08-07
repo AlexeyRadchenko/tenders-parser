@@ -117,24 +117,3 @@ class Parser:
             'email': phone_email[1],
         }
         return org
-
-    def clear_attachment_display_name(self, name):
-        return re.search(r'(.+?)(\.[^.]*$|$)', name).group(1)
-
-    def get_attachments(self, data_html):
-        """
-        Получение прикрепленных файлов
-        """
-        attachments = []
-        attachments_div = data_html.find('div', class_='block__docs_container block__docs_container_download')
-        files = attachments_div.find_all('div', class_='block__docs_container_cell')
-        if len(files) == 1 and files[0].find('p').text == 'Нет прикрепленных документов':
-            return attachments
-        for file in files:
-            attachments.append({
-                'display_name': self.clear_attachment_display_name(file.find('a').text),
-                'url': file.find('a').attrs['href'],
-                'real_name': file.find('a').text,
-                'publication_date': file.find('time').text,
-            })
-        return attachments
