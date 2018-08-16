@@ -76,20 +76,20 @@ class Collector:
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
         #print(tender_lots[0])
         org = self.parser.get_org_data(tender_data_html)
-        multilot = False
         for lot in tender_lots:
-            #dbmodel = self.repository.get_one(item['number'])
+            tender_id, tender_number, multilot = self.parser.get_tender_id_number_multilot(lot['number_lot'])
+            #dbmodel = self.repository.get_one(tender_id)
             #if dbmodel is None or dbmodel['status'] != item['change_datetime']:
             attachments = self.parser.get_attachments(lot, item)
             if True:
-                model = self.mapper.map(item, multilot, org, lot, attachments)
+                model = self.mapper.map(item, multilot, org, lot, attachments, tender_id, tender_number)
                 #print(model)
 
                 short_model = {
                     '_id': model['id'],
                     'status': model['status']
                 }
-                print(attachments)
+
                 # добавляем/обновляем в MongoDB
                 """
                 self.repository.upsert(short_model)

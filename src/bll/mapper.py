@@ -25,23 +25,23 @@ class Mapper:
         }]
 
     @staticmethod
-    def get_global_search(item, lot):
+    def get_global_search(tender_id, lot):
         return '{} {} {} {}'.format(
-            item['number'],
+            tender_id,
             lot['name'] if lot['name'] else '',
             lot['customer'] if lot['customer'] else '',
             lot['type'] if lot['type'] else ''
         )
 
     @staticmethod
-    def get_tender_search(item, lot):
+    def get_tender_search(tender_id, lot):
         return '{} {} {}'.format(
-            item['number'] if item['number'] else '',
+            tender_id,
             lot['name'] if lot['name'] else '',
             lot['customer'] if lot['customer'] else ''
         )
 
-    def map(self, item, multilot, org, lot, attachments):
+    def map(self, item, multilot, org, lot, attachments, tender_id, tender_number):
         """
         Функция маппинга итоговой модели
         """
@@ -49,7 +49,7 @@ class Mapper:
         model = {
             # Идентификатор тендера (Тендер+Лот)
             # Для каждого лота в тендере создается отдельная модель
-            'id': int(item['number']),
+            'id': tender_id,
             # Массив заказчиков
             # [{
             #   guid = идентификатор организации (str/None),
@@ -59,14 +59,14 @@ class Mapper:
             'customers': self.get_customer_model_list(lot, org),
             # массив документов
             'attachments': attachments,
-            'globalSearch': self.get_global_search(item, lot),
+            'globalSearch': self.get_global_search(tender_id, lot),
             'guaranteeApp': None,
             'href': item['link'],
             'json': None,
             # Максимальная (начальная) цена тендера
             'maxPrice': lot['price'],
             'multilot': multilot,
-            'number': item['number'],
+            'number': tender_number,
             # Массив ОКПД (если присутствует) ex. ['11.11', '20.2']
             'okdp': [],
             # Массив ОКПД2 (если присутствует)
@@ -87,7 +87,7 @@ class Mapper:
             'submissionCloseDateTime': self.tools.get_utc_epoch(item['close_sub_datetime']),
             # Дата начала подачи заявок UNIX EPOCH (UTC)
             'submissionStartDateTime': self.tools.get_utc_epoch(item['start_sub_datetime']),
-            'tenderSearch': self.get_tender_search(item, lot),
+            'tenderSearch': self.get_tender_search(tender_id, lot),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
             'status': 0,

@@ -141,3 +141,14 @@ class Parser:
                 'size': None
             })
         return attachments
+
+    def get_tender_id_number_multilot(self, number):
+        lot_num = re.search(r'.+\-\d+', number)
+        if lot_num:
+            item_id = lot_num.group(0).replace('-', '_')
+            number, lot = item_id.split('_')
+            return item_id, number, True
+        else:
+            item_id = number + '_1'
+            return item_id, number, False
+
