@@ -41,17 +41,7 @@ class Mapper:
             lot['customer'] if lot['customer'] else ''
         )
 
-    def get_attachments(self, lot, item):
-        attachments = [{
-                'displayName': None,
-                'href': lot['doc'],
-                'publicationDateTime': self.tools.get_utc_epoch(item['publication_datetime']),
-                'realName': None,
-                'size': None
-            }]
-        return attachments
-
-    def map(self, item, multilot, org, lot):
+    def map(self, item, multilot, org, lot, attachments):
         """
         Функция маппинга итоговой модели
         """
@@ -68,7 +58,7 @@ class Mapper:
             # }]
             'customers': self.get_customer_model_list(lot, org),
             # массив документов
-            'attachments': self.get_attachments(lot, item),
+            'attachments': attachments,
             'globalSearch': self.get_global_search(item, lot),
             'guaranteeApp': None,
             'href': item['link'],
@@ -107,7 +97,7 @@ class Mapper:
             'kind': 0,
             'type': 30,
             'ktru': [],
-            'prepayment': 'double',
+            'prepayment': [],
         }
 
         model['json'] = self.get_json(
@@ -218,30 +208,6 @@ class Mapper:
                     guarantee_contract=None,
                     customer_guid=model['customers'][0]['guid'],
                     customer_name=model['customers'][0]['name'],
-                )
-            ).add_category(
-                lambda c: c.set_properties(
-                    name='ObjectInfo',
-                    displayName='Информация об объекте закупки',
-                ).add_table(
-                    lambda t: t.set_properties(
-                        name='Objects',
-                        displayName='Объекты закупки'
-                    ).set_header(
-                        lambda th: th.add_cells([
-                            Head(name='Name', displayName='Наименование')
-                        ])
-                    ).add_rows(
-                        [lot['name']],
-                        lambda el, row: row.add_cells([
-                            Cell(
-                                name='Name',
-                                type=FieldType.String,
-                                value=el,
-                                modifications=[]
-                            )
-                        ])
-                    )
                 )
             ).add_category(
                 lambda c: c.set_properties(

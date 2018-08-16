@@ -20,7 +20,7 @@ class Http:
     def get_tender_list(self):
         """генератор списков тендеров"""
         while True:
-            print('page', self.init_params['PAGEN_1'])
+            #print('page', self.init_params['PAGEN_1'])
             r = get(self.source_url, params=self.init_params, proxies=self.proxy)
             res = retry(r, 5, 100)
             if res is not None and res.status_code == 200:

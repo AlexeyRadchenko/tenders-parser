@@ -74,21 +74,22 @@ class Collector:
         # Получение HTML страницы с данными тендера
         tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
-        print(tender_lots[0])
+        #print(tender_lots[0])
         org = self.parser.get_org_data(tender_data_html)
         multilot = False
         for lot in tender_lots:
-            #dbmodel = self.repository.get_one(item['number])
+            #dbmodel = self.repository.get_one(item['number'])
             #if dbmodel is None or dbmodel['status'] != item['change_datetime']:
+            attachments = self.parser.get_attachments(lot, item)
             if True:
-                model = self.mapper.map(item, multilot, org, lot)
-                print(model)
+                model = self.mapper.map(item, multilot, org, lot, attachments)
+                #print(model)
 
                 short_model = {
                     '_id': model['id'],
                     'status': model['status']
                 }
-
+                print(attachments)
                 # добавляем/обновляем в MongoDB
                 """
                 self.repository.upsert(short_model)

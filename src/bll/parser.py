@@ -117,3 +117,27 @@ class Parser:
             'email': phone_email[1],
         }
         return org
+
+    def get_attachments(self, lot, item):
+        doc_url, res_url = lot.get('doc'), lot.get('result')
+        file_name_pattern = re.compile(r'[^%]+$')
+        attachments = []
+        if doc_url:
+            file_name_doc = re.search(file_name_pattern, doc_url).group(0).replace('2F', '')
+            attachments.append({
+                'displayName': file_name_doc,
+                'href': doc_url,
+                'publicationDateTime': self.tools.get_utc_epoch(item['publication_datetime']),
+                'realName': file_name_doc,
+                'size': None
+            })
+        if res_url:
+            file_name_res = re.search(file_name_pattern, doc_url).group(0).replace('2F', '')
+            attachments.append({
+                'displayName': file_name_res,
+                'href': doc_url,
+                'publicationDateTime': self.tools.get_utc_epoch(item['publication_datetime']),
+                'realName': file_name_res,
+                'size': None
+            })
+        return attachments
