@@ -18,6 +18,7 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
+        """
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
@@ -26,7 +27,7 @@ class Collector:
                                          rabbitmq['port'],
                                          rabbitmq['username'],
                                          rabbitmq['password'],
-                                         rabbitmq['queue'])
+                                         rabbitmq['queue'])"""
 
     def collect(self):
         """
@@ -41,9 +42,10 @@ class Collector:
         # Обработка тендеров
         count = 0
         for tender_data_list in tender_data_list_gen:
-            tender_items_list = self.parser.get_part_data(tender_data_list)
-            total = len(tender_items_list)
-            for i, item in enumerate(tender_items_list):
+            print(len(tender_data_list))
+            #tender_items_list = self.parser.get_part_data(tender_data_list)
+            #total = len(tender_items_list)
+            """for i, item in enumerate(tender_items_list):
                 if self.publish_date:
                     if self.publish_date.day == Tools.get_datatime_from_string(item['publication_date']).day:
                         print('[{}/{}] Processing tender number: {}'.format(i + 1, total, item))
@@ -58,7 +60,7 @@ class Collector:
                 if count == self.quantity:
                     break
             if count == self.quantity:
-                break
+                break"""
 
     def process_tender(self, item):
         """
@@ -79,9 +81,9 @@ class Collector:
 
         for lot in tender_lots:
             tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
-            dbmodel = self.repository.get_one(tender_lot_id)
-            if dbmodel is None or dbmodel['status'] != lot['status']:
-            #if True:
+            #dbmodel = self.repository.get_one(tender_lot_id)
+            #if dbmodel is None or dbmodel['status'] != lot['status']:
+            if True:
                 model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
                 #print(model)
                 
@@ -89,12 +91,11 @@ class Collector:
                     '_id': model['id'],
                     'status': model['status']
                 }
-
+                """
                 # добавляем/обновляем в MongoDB
-
                 self.repository.upsert(short_model)
                 print('Upserted in MongoDB')
 
                 # отправляем в RabbitMQ
                 self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')
+                print('Published to RabbitMQ')"""
