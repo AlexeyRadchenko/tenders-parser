@@ -1,4 +1,4 @@
-from src.tools import Tools, REGION_MAP
+from src.tools import Tools, ORG_REGION_MAP
 import re
 
 
@@ -11,15 +11,15 @@ class Parser:
         self.base_url = base_url
 
     @staticmethod
-    def item_filter(item_data):
-        """если номера тендера содержит букву возвращаем его """
-        regex = re.compile(r'\D')
-        number = item_data.find('p', {'itemprop': 'name'}).text.split()[-1]
-        clear_number = number.strip()
-        return clear_number if regex.match(clear_number) else None
+    def get_time_delta(delta_str):
+        try:
+            time_delta = int(re.search(r'UTC\+\d+', delta_str).group(0).replace('UTC+', ''))
+        except AttributeError:
+            return None
+        return time_delta
 
     @staticmethod
-    def clear_date_str(date_str):
+    def clear_date_str(date_str, time_delta):
         if not date_str:
             return None
         try:
@@ -34,213 +34,149 @@ class Parser:
 
         date_time_str = '{} {}'.format(date, time).strip()
 
-
-        try:
-            if 'GMT' not in date_str:
-                time_delta = int(re.search(r'\+\d\d', date_str).group(0).replace('\+', '').lstrip('0'))
-            else:
-                time_delta = int(
-                    re.search(
-                        r'\+\d+', date_str.replace(date, '').replace(time, '')).group(0).replace('\+', '').lstrip('0'))
-        except AttributeError:
-            return date_time_str, None
         return date_time_str, time_delta
 
     @staticmethod
-    def clear_double_data_str(data_str):
-        if not data_str or data_str == 'Цена не указана' or data_str == 'Не установлен':
-            return None
-        elif '(сумма блокируется)' in data_str:
-            data_str = data_str.replace('(сумма блокируется)', '').strip()
-        return float(data_str.split('\n')[0].replace(' ', '').replace(',', '.'))
+    def get_lot_deadline(deadline_str):
+        try:
+            date = re.search(r'\d\d\.\d\d\.\d\d\d\d', deadline_str).group(0)
+        except AttributeError:
+            return deadline_str
+        return date
+
+    @staticmethod
+    def get_id_from_url(url):
+        num_str = re.search(r'\d+', url)
+        if num_str:
+            return num_str.group(0)
 
     def get_part_data(self, data_list):
         """парсим строки пришедшие в запросе возвращаем список первичных данных"""
         item_list = []
         for item_data in data_list:
-            item_number = self.item_filter(item_data)
-            if item_number:
-                #print(item_number)
-                item_list.append({
-                    'number': item_number,
-                    'name': item_data.find('p', {'itemprop': 'description'}).text,
-                    'link': self.base_url + item_data.attrs['href'],
-                    'sub_close_date': self.clear_date_str(item_data.find(
-                        'p', class_='block__related_details_date').text),
-                    'type': item_data.find('p', class_='block__related_about_title').text,
-                    'price': self.clear_double_data_str(item_data.find(
-                        'div', class_='block__related_details_sum').find('span').text),
-                })
+            info_blocks = item_data.find_all('div', class_='grid__item')
+            left_data = info_blocks[0].find_all('div')
+            right_data = info_blocks[1].find_all('div')
+            item_list.append({
+                'id': self.get_id_from_url(item_data.find('a').attrs['href']),
+                'number': item_data.find('a').text.replace('№ ', ''),
+                'name': right_data[0].find_all('span')[1].text,
+                'link': self.base_url + item_data.find('a').attrs['href'],
+                'type': left_data[2].find_all('span')[1].text,
+                'status': left_data[0].find_all('span')[1].text,
+                'customer': right_data[3].find_all('span')[1].text,
+                'target_place': right_data[4].find_all('span')[1].text,
+            })
         return item_list
 
     @staticmethod
-    def find_lot_row(lot_div, block_name, search_str):
-        lot_data_containers = lot_div.find_all('div', class_='block__docs_container')
+    def find_lot_form_data(lot_forms_data, search_str):
+        #print(len(lot_forms_data), lot_forms_data)
         lot_blocks_map = {
-            'Этапы закупочной процедуры': lot_data_containers[0],
-            'Цена договора и требования к обеспечению': lot_data_containers[0],
-            'Условия договора': lot_data_containers[3],
-            'Заказчики, с которыми заключается договор': lot_data_containers[6],
-            #'Классификатор ОКПД2': lot_data_containers[7],
-            #'Классификатор ОКВЭД2': lot_data_containers[8],
-            'Документация лота': lot_data_containers[9],
-            #'Перечень товаров, работ, услуг': lot_data_containers[10]
+            'Реестровый номер': lot_forms_data[0].find_all('div')[1].text,
+            'Заказчик': lot_forms_data[1].find_all('div')[1].text,
+            'Наименование закупки': lot_forms_data[2].find_all('div')[1].text,
+            'Категория закупки конкурентной процедуры': lot_forms_data[4].find_all('div')[1].text,
+            'Местное время': lot_forms_data[7].find_all('div')[1].text,
+            'Дата и время начала приёма предложений': lot_forms_data[8].find('div', class_='four-sevenths').text,
+            'Дата и время окончания приёма предложений': lot_forms_data[9].find('div', class_='four-sevenths').text,
+            'Дата вскрытия': lot_forms_data[10].find('div', class_='four-sevenths').text,
+            'Контактный телефон': lot_forms_data[11].find_all('div')[1].text,
+            'Контактный e-mail': lot_forms_data[12].find_all('div')[1].text,
+            'Информационное сообщение': lot_forms_data[14].find_all('div')[1].text if len(lot_forms_data) > 15 else None,
         }
-        for row in lot_blocks_map[block_name].find_all('div', class_='block__docs_container_cell'):
+        return lot_blocks_map[search_str]
+
+        """for row in lot_blocks_map[block_name].find_all('div', class_='block__docs_container_cell'):
             cells = row.find_all('p')
             if cells[0].text.strip() == search_str:
                 return ''.join(cells[1].findAll(text=True)).strip()
-        return None
-
-    def get_lot_delivery_place(self, lot_div):
-        full_string = self.find_lot_row(
-            lot_div, 'Условия договора', 'Место поставки товаров/выполнения работ/оказания услуг'
-        )
-        drop_string = lot_div.find('a', class_='price_nds price_nds--forPrint').text
-        return full_string.replace(drop_string, '').strip()
+        return None"""
 
     @staticmethod
-    def get_lot_okpd_okved(lot_div, okpd2=False, okved2=False):
-        if okpd2:
-            data_container = lot_div.find_all('div', class_='block__docs_container')[7]
-        elif okved2:
-            data_container = lot_div.find_all('div', class_='block__docs_container')[8]
+    def lots_exists(lots_table):
+        if lots_table.find_all('tr')[1].find('td').text == ' - лотов нет -':
+            return False
         else:
-            return None
-        items = data_container.find_all('div', class_='block__docs_container_cell')
-        if len(items) == 1 and items[0].findAll(text=True)[0] == 'Отсутствуют':
-            return None
-        result = []
-        for item in items:
-            result.append('{} {}'.format(item.find('p').text, item.find('h4').text))
-        return result
-
-    @staticmethod
-    def get_region_from_address(address):
-        address = address.lower()
-        for key, item in REGION_MAP.items():
-            if address.find(key) != -1:
-                return item
-
-    @staticmethod
-    def get_lot_positions(lot_div):
-        positions_data = lot_div.find(
-            'div', class_='block__docs_container block__docs_container_works'
-        ).find_all('div', class_='block__docs_container_cell')
-        positions = []
-        for position in positions_data:
-            positions.append({
-                'name': position.find('h4').text,
-                'quantity': position.find('span', class_='block__docs_container_info_number').text
-            })
-        return positions
-
-    @staticmethod
-    def get_currency_from_docs_container(data_html):
-        return data_html.find(
-            'div', class_='block__docs first'
-        ).find_all('div', class_='block__docs_container_cell')[4].find(
-            'span', class_='price_nds'
-        ).text
+            return True
 
     def get_tender_lots_data(self, data_html):
-        lots_divs = data_html.find_all('div', class_='block__docs_lot_content')
         lots = []
-        for num, lot_div in enumerate(lots_divs, start=1):
-            currency = self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Валюта')
-            if not currency:
-                currency = self.get_currency_from_docs_container(data_html)
+        lots_table = data_html.find('table', {'id': 'table_spec'})
+        table_rows = lots_table.find_all('tr')
+        lots_exists = self.lots_exists(lots_table)
+        lot_forms_divs = data_html.find('div', class_='tile').find('form').find_all('div', class_='form-group_indent_s')
+        for num, lot_row in enumerate(table_rows[1:], start=1):
+            data = lot_row.find_all('td')
+            time_delta = self.get_time_delta(
+                self.find_lot_form_data(lot_forms_divs, 'Местное время')
+            )
             lots.append({
                 'number': num,
-                'name': self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Предмет договора'),
-                'status': self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Текущий статус'),
-                'customer': self.find_lot_row(
-                    lot_div, 'Заказчики, с которыми заключается договор', 'Наименование заказчика'
+                'name': data[1].text.replace('\n', '').replace('\t', '') if lots_exists else None,
+                'processing_time': data[2].text.replace('\n', '').replace('\t', '') if lots_exists else None,
+                'volume': data[3].text.replace('\n', '').replace('\t', '') if lots_exists else None,
+                'lot_subject': data[4].text.replace('\n', '').replace('\t', '') if lots_exists else None,
+                'publication_date': self.clear_date_str(
+                    self.find_lot_form_data(lot_forms_divs, 'Дата и время начала приёма предложений'),
+                    time_delta
+                ),
+                'sub_start_date': self.clear_date_str(
+                    self.find_lot_form_data(lot_forms_divs, 'Дата и время начала приёма предложений'),
+                    time_delta
                 ),
                 'sub_close_date': self.clear_date_str(
-                    self.find_lot_row(lot_div,
-                                      'Этапы закупочной процедуры', 'Дата и время окончания срока приема заявок')
+                    self.find_lot_form_data(lot_forms_divs, 'Дата и время окончания приёма предложений'),
+                    time_delta
                 ),
-                'price': self.clear_double_data_str(
-                    self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Начальная цена')
-                ),
-                'guarantee_app': self.clear_double_data_str(
-                    self.find_lot_row(
-                        lot_div, 'Цена договора и требования к обеспечению', 'Размер обеспечения заявки (в рублях)'
-                    )
-                ),
-                'payment_terms': self.find_lot_row(
-                    lot_div, 'Условия договора', 'Условия оплаты и поставки товаров/выполнения работ/оказания услуг'),
-                'quantity': self.find_lot_row(
-                    lot_div, 'Условия договора',
-                    'Количество поставляемого товара/объем выполняемых работ/оказываемых услуг'
-                ),
-                'delivery_place': self.get_lot_delivery_place(lot_div),
                 'order_view_date': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время вскрытия заявок')),
-                'scoring_date': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата подведения итогов')
+                    self.find_lot_form_data(lot_forms_divs, 'Дата вскрытия'),
+                    time_delta
                 ),
-                'scoring_datetime': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Подведение итогов не позднее')
-                ),
-                'publication_date': self.clear_date_str(
-                    ''.join(
-                        data_html.find(
-                            'div', class_='block__docs_container').find('p', class_='datePublished').findAll(text=True)
-                    ),
-                ),
-                'trade_date': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время проведения')
-                ),
-                'currency': currency,
-                'positions': self.get_lot_positions(lot_div),
-                'okpd2': self.get_lot_okpd_okved(lot_div, okpd2=True),
+                'info_msg': self.find_lot_form_data(lot_forms_divs, 'Информационное сообщение'),
             })
         return lots
 
     @staticmethod
-    def clear_org_name(full_text, drop_text):
-        return full_text.replace(drop_text, '').strip()
+    def get_customer_region(customer):
+        clear_name = re.search(r'«[^»]+', customer)
+        if clear_name:
+            return ORG_REGION_MAP[clear_name.group(0).lstrip('«')]
 
     def get_org_data(self, data_html):
-        org_data_list = data_html.find(
-            'div', class_='block__docs_container organizationInfo'
-        ).find_all('div', class_='block__docs_container_cell')
-
+        lot_forms_divs = data_html.find('div', class_='tile').find('form').find_all('div', class_='form-group_indent_s')
         org = {
-            'name': self.clear_org_name(
-                org_data_list[0].find('h3').text, org_data_list[0].find('h3').find('a').text
-            ),
-            'actual_address': org_data_list[1].find_all('p')[1].text,
-            'post_address': org_data_list[2].find_all('p')[1].text,
-            'fio': org_data_list[6].find_all('p')[1].text,
-            'phone': org_data_list[3].find_all('p')[1].text,
-            'fax': org_data_list[4].find_all('p')[1].text,
-            'email': org_data_list[5].find_all('p')[1].text,
-            'place': org_data_list[7].find_all('p')[1].text,
-            'region': self.get_region_from_address(org_data_list[2].find_all('p')[1].text,)
+            'name': self.find_lot_form_data(lot_forms_divs, 'Заказчик'),
+            'phone': self.find_lot_form_data(lot_forms_divs, 'Контактный телефон'),
+            'email': self.find_lot_form_data(lot_forms_divs, 'Контактный e-mail'),
+            'region': self.get_customer_region(self.find_lot_form_data(lot_forms_divs, 'Заказчик'))
         }
         return org
 
     def clear_attachment_display_name(self, name):
-        return re.search(r'(.+?)(\.[^.]*$|$)', name).group(1)
+        return re.search(r'(.+?)(\.[^.]*$|$)', name).group(0)
 
     def get_attachments(self, data_html):
         """
         Получение прикрепленных файлов
         """
         attachments = []
-        attachments_div = data_html.find('div', class_='block__docs_container block__docs_container_download')
-        files = attachments_div.find_all('div', class_='block__docs_container_cell')
-        if len(files) == 1 and files[0].find('p').text == 'Нет прикрепленных документов':
-            return attachments
+        attachments_table = data_html.find('table', {'id': 'files'})
+        files = attachments_table.find('tbody').find_all('tr')
+        lot_forms_divs = data_html.find('div', class_='tile').find('form').find_all('div', class_='form-group_indent_s')
+        time_delta = self.get_time_delta(
+            self.find_lot_form_data(lot_forms_divs, 'Местное время')
+        )
         for file in files:
+            data = file.find_all('td')
+
             attachments.append({
-                'display_name': self.clear_attachment_display_name(file.find('a').text),
-                'url': file.find('a').attrs['href'],
-                'real_name': file.find('a').text,
-                'publication_date': self.clear_date_str(file.find('time').text),
+                'display_name': data[0].find('a').text,
+                'url': self.base_url + data[0].find('a').attrs['href'],
+                'real_name': data[0].find('a').text,
+                'publication_date': self.clear_date_str(
+                    self.find_lot_form_data(lot_forms_divs, 'Дата и время начала приёма предложений'),
+                    time_delta
+                ),
             })
-        #print(attachments)
         return attachments

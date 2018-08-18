@@ -42,10 +42,9 @@ class Collector:
         # Обработка тендеров
         count = 0
         for tender_data_list in tender_data_list_gen:
-            print(len(tender_data_list))
-            #tender_items_list = self.parser.get_part_data(tender_data_list)
-            #total = len(tender_items_list)
-            """for i, item in enumerate(tender_items_list):
+            tender_items_list = self.parser.get_part_data(tender_data_list)
+            total = len(tender_items_list)
+            for i, item in enumerate(tender_items_list):
                 if self.publish_date:
                     if self.publish_date.day == Tools.get_datatime_from_string(item['publication_date']).day:
                         print('[{}/{}] Processing tender number: {}'.format(i + 1, total, item))
@@ -60,7 +59,7 @@ class Collector:
                 if count == self.quantity:
                     break
             if count == self.quantity:
-                break"""
+                break
 
     def process_tender(self, item):
         """
@@ -77,8 +76,9 @@ class Collector:
         multilot = True if len(tender_lots) > 1 else False
         org = self.parser.get_org_data(tender_data_html)
         attachments = self.parser.get_attachments(tender_data_html)
+        print(tender_lots)
         #print(item, tender_lots, org, attachments, multilot)
-
+        """
         for lot in tender_lots:
             tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
             #dbmodel = self.repository.get_one(tender_lot_id)
@@ -91,7 +91,7 @@ class Collector:
                     '_id': model['id'],
                     'status': model['status']
                 }
-                """
+                
                 # добавляем/обновляем в MongoDB
                 self.repository.upsert(short_model)
                 print('Upserted in MongoDB')
