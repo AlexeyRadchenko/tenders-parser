@@ -117,7 +117,8 @@ class Parser:
                     self.find_lot_form_data(lot_forms_divs, 'Дата вскрытия'),
                     time_delta
                 ),
-                'info_msg': self.find_lot_form_data(lot_forms_divs, 'Информационное сообщение').replace('\n', ' '),
+                'info_msg': self.find_lot_form_data(lot_forms_divs, 'Информационное сообщение').replace('\n', ' ') if
+                self.find_lot_form_data(lot_forms_divs, 'Информационное сообщение') else None,
             })
         return lots
 
