@@ -16,7 +16,8 @@ class Http:
     ]
 
     init_params = {
-        'PAGE': 1
+        'PAGE': 1,
+        #'FILTER[STATE]': 'ALL'
     }
 
     def get_tender_list(self):

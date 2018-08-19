@@ -13,7 +13,7 @@ class Parser:
     @staticmethod
     def get_time_delta(delta_str):
         try:
-            time_delta = int(re.search(r'UTC\+\d+', delta_str).group(0).replace('UTC+', ''))
+            time_delta = int(re.search(r'MSK\+\d+', delta_str).group(0).replace('MSK+', ''))
         except AttributeError:
             return None
         return time_delta
@@ -65,33 +65,17 @@ class Parser:
                 'type': left_data[2].find_all('span')[1].text,
                 'status': left_data[0].find_all('span')[1].text,
                 'customer': right_data[3].find_all('span')[1].text,
-                'target_place': right_data[4].find_all('span')[1].text,
+                'target_place': right_data[4].find_all('span')[1].text.replace('\n', '').replace('\t', ''),
             })
         return item_list
 
     @staticmethod
     def find_lot_form_data(lot_forms_data, search_str):
-        #print(len(lot_forms_data), lot_forms_data)
-        lot_blocks_map = {
-            'Реестровый номер': lot_forms_data[0].find_all('div')[1].text,
-            'Заказчик': lot_forms_data[1].find_all('div')[1].text,
-            'Наименование закупки': lot_forms_data[2].find_all('div')[1].text,
-            'Категория закупки конкурентной процедуры': lot_forms_data[4].find_all('div')[1].text,
-            'Местное время': lot_forms_data[7].find_all('div')[1].text,
-            'Дата и время начала приёма предложений': lot_forms_data[8].find('div', class_='four-sevenths').text,
-            'Дата и время окончания приёма предложений': lot_forms_data[9].find('div', class_='four-sevenths').text,
-            'Дата вскрытия': lot_forms_data[10].find('div', class_='four-sevenths').text,
-            'Контактный телефон': lot_forms_data[11].find_all('div')[1].text,
-            'Контактный e-mail': lot_forms_data[12].find_all('div')[1].text,
-            'Информационное сообщение': lot_forms_data[14].find_all('div')[1].text if len(lot_forms_data) > 15 else None,
-        }
-        return lot_blocks_map[search_str]
-
-        """for row in lot_blocks_map[block_name].find_all('div', class_='block__docs_container_cell'):
-            cells = row.find_all('p')
-            if cells[0].text.strip() == search_str:
-                return ''.join(cells[1].findAll(text=True)).strip()
-        return None"""
+        for block in lot_forms_data:
+            block_divs = block.find_all('div')
+            block_name = block_divs[0].find('label').text
+            if block_name.replace('\n', '').replace('\t', '').replace(':', '') == search_str:
+                return block_divs[1].text
 
     @staticmethod
     def lots_exists(lots_table):
@@ -133,7 +117,7 @@ class Parser:
                     self.find_lot_form_data(lot_forms_divs, 'Дата вскрытия'),
                     time_delta
                 ),
-                'info_msg': self.find_lot_form_data(lot_forms_divs, 'Информационное сообщение'),
+                'info_msg': self.find_lot_form_data(lot_forms_divs, 'Информационное сообщение').replace('\n', ' '),
             })
         return lots
 
@@ -146,9 +130,9 @@ class Parser:
     def get_org_data(self, data_html):
         lot_forms_divs = data_html.find('div', class_='tile').find('form').find_all('div', class_='form-group_indent_s')
         org = {
-            'name': self.find_lot_form_data(lot_forms_divs, 'Заказчик'),
-            'phone': self.find_lot_form_data(lot_forms_divs, 'Контактный телефон'),
-            'email': self.find_lot_form_data(lot_forms_divs, 'Контактный e-mail'),
+            'name': self.find_lot_form_data(lot_forms_divs, 'Заказчик').replace('\n', '').replace('\t', ''),
+            'phone': self.find_lot_form_data(lot_forms_divs, 'Контактный телефон').replace('\n', '').replace('\t', ''),
+            'email': self.find_lot_form_data(lot_forms_divs, 'Контактный e-mail').replace('\n', '').replace('\t', ''),
             'region': self.get_customer_region(self.find_lot_form_data(lot_forms_divs, 'Заказчик'))
         }
         return org
@@ -162,6 +146,8 @@ class Parser:
         """
         attachments = []
         attachments_table = data_html.find('table', {'id': 'files'})
+        if attachments_table.find_all('tr')[1].find('td').text == ' - документов нет -':
+            return attachments
         files = attachments_table.find('tbody').find_all('tr')
         lot_forms_divs = data_html.find('div', class_='tile').find('form').find_all('div', class_='form-group_indent_s')
         time_delta = self.get_time_delta(
@@ -178,5 +164,6 @@ class Parser:
                     self.find_lot_form_data(lot_forms_divs, 'Дата и время начала приёма предложений'),
                     time_delta
                 ),
+                'size': data[1].text,
             })
         return attachments
