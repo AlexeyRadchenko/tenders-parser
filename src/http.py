@@ -1,6 +1,7 @@
 from src.bll.retrier import retry
-from requests import get
+from requests import post
 from bs4 import BeautifulSoup
+import json
 
 
 class Http:
@@ -10,16 +11,47 @@ class Http:
         else:
             self.proxy = None
 
-    source_url = 'https://etpgpb.ru/procedures/page/{}/?procedure[category]=actual&procedure[section][0]' \
-                 '=common&procedure[section][1]=gazprom'
+    source_url = 'https://zakupki.tmk-group.com/index.php'
+
+    init_request_params = {
+        'module': 'default',
+        'rpctype': 'direct'
+    }
+    init_request_json = {
+        'action': 'Procedure',
+        'data': [{
+            'dir': 'DESC',
+            'limit': 25,
+            'sort': 'id',
+            'start': 0
+        }],
+        'jsversion': 387,
+        'method': 'list',
+        'tid': 7,
+        'token': 'ZqbdFGbG5dA + K + zoIfxn7w',
+        'type': 'rpc'
+    }
 
     def get_tender_list(self):
-        """генератор списков тендеров"""
-        page = 1
+        """генератор списка тендеров в формате JSON"""
+        while True:
+            r = post(self.source_url, params=self.init_request_params, json=self.init_request_json, proxies=self.proxy)
+            res = retry(r, 5, 100)
+            if res is not None and res.status_code == 200:
+                result = r.json()
+                total = result['result']['totalCount']
+                print(total, total - self.init_request_json['data'][0]['start'])
+                yield result['result']['procedures']
+                if total - self.init_request_json['data'][0]['start'] > 25:
+                    self.init_request_json['data'][0]['start'] += 25
+                else:
+                    self.init_request_json['data'][0]['start'] = 0
+                    break
+        """
         while True:
             #print(page)
-            page_url = self.source_url.format(page)
-            r = get(page_url, proxies=self.proxy)
+            #page_url = self.source_url.format(page)
+            r = get(self.source_url, params=self.init_request_params, json=self.init_request_json,  proxies=self.proxy)
             res = retry(r, 5, 100)
             if res is not None and res.status_code == 200:
                 html = BeautifulSoup(res.content, 'lxml')
@@ -31,11 +63,11 @@ class Http:
                 else:
                     break
             elif res.status_code == 500:
-                break
+                break"""
 
     def get_tender_data(self, url):
         """данные отдельного тендера"""
-        r = get(url, proxies=self.proxy)
+        r = post(url, proxies=self.proxy)
         res = retry(r, 5, 100)
         if res is not None and res.status_code == 200:
             html = BeautifulSoup(res.content, 'lxml')

@@ -58,19 +58,16 @@ class Parser:
         """парсим строки пришедшие в запросе возвращаем список первичных данных"""
         item_list = []
         for item_data in data_list:
-            item_number = self.item_filter(item_data)
-            if item_number:
-                #print(item_number)
-                item_list.append({
-                    'number': item_number,
-                    'name': item_data.find('p', {'itemprop': 'description'}).text,
-                    'link': self.base_url + item_data.attrs['href'],
-                    'sub_close_date': self.clear_date_str(item_data.find(
-                        'p', class_='block__related_details_date').text),
-                    'type': item_data.find('p', class_='block__related_about_title').text,
-                    'price': self.clear_double_data_str(item_data.find(
-                        'div', class_='block__related_details_sum').find('span').text),
-                })
+            item_list.append({
+                'number': item_data['registry_number'],
+                'name': item_data.find('p', {'itemprop': 'description'}).text,
+                'link': '{}{}{}'.format(self.base_url, '#com/procedure/view/procedure/', item_data['id']),
+                'sub_close_date': self.clear_date_str(item_data.find(
+                    'p', class_='block__related_details_date').text),
+                'type': item_data.find('p', class_='block__related_about_title').text,
+                'price': self.clear_double_data_str(item_data.find(
+                    'div', class_='block__related_details_sum').find('span').text),
+            })
         return item_list
 
     @staticmethod
