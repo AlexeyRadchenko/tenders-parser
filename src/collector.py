@@ -18,7 +18,7 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
-        """
+
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
@@ -27,7 +27,7 @@ class Collector:
                                          rabbitmq['port'],
                                          rabbitmq['username'],
                                          rabbitmq['password'],
-                                         rabbitmq['queue'])"""
+                                         rabbitmq['queue'])
 
     def collect(self):
         """
@@ -47,13 +47,13 @@ class Collector:
             for i, item in enumerate(tender_items_list):
                 if self.publish_date:
                     if self.publish_date.day == Tools.get_datatime_from_string(item['publication_date']).day:
-                        #print('[{}/{}] Processing tender number: {}'.format(i + 1, total, item))
+                        print('[{}/{}] Processing tender number: {}'.format(i + 1, total, item))
                         self.process_tender(item)
                         count += 1
                     else:
                         continue
                 else:
-                    #print('[{}/{}] Processing tender number: {}'.format(i+1, total, item))
+                    print('[{}/{}] Processing tender number: {}'.format(i+1, total, item))
                     self.process_tender(item)
                     count += 1
                 if count == self.quantity:
@@ -71,34 +71,30 @@ class Collector:
           Иначе пропускаем
         """
         # Получение HTML страницы с данными тендера
-        #tender_data_html = self.http.get_tender_data('http://zakupki.gazprom-neft.ru/tenderix/view.php?ID=8603')
-        print(item['number'], item['id'], item['link'])
+        #print(item['number'], item['id'], item['link'])
         tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
         multilot = True if len(tender_lots) > 1 else False
         org = self.parser.get_org_data(tender_data_html)
         attachments = self.parser.get_attachments(tender_data_html)
         #print(item, tender_lots, org, attachments, multilot)
-        #print(multilot, org, attachments)
         for lot in tender_lots:
             tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
-            #dbmodel = self.repository.get_one(tender_lot_id)
-            #if dbmodel is None or dbmodel['status'] != lot['status'] or lot['info_msg']:
-
-            if True:
-                
+            dbmodel = self.repository.get_one(tender_lot_id)
+            if dbmodel is None or dbmodel['status'] != lot['status'] or lot['info_msg']:
+            #if True:
                 model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
-                print(model)
+                #print(model)
                 
                 short_model = {
                     '_id': model['id'],
                     'status': model['status']
                 }
-                """
+
                 # добавляем/обновляем в MongoDB
                 self.repository.upsert(short_model)
                 print('Upserted in MongoDB')
 
                 # отправляем в RabbitMQ
                 self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')"""
+                print('Published to RabbitMQ')
