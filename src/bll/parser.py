@@ -59,108 +59,35 @@ class Parser:
         item_list = []
         for item_data in data_list:
             item_list.append({
+                'id': item_data['id'],
                 'number': item_data['registry_number'],
-                'name': item_data.find('p', {'itemprop': 'description'}).text,
+                'name': item_data['title'],
                 'link': '{}{}{}'.format(self.base_url, '#com/procedure/view/procedure/', item_data['id']),
-                'sub_close_date': self.clear_date_str(item_data.find(
-                    'p', class_='block__related_details_date').text),
-                'type': item_data.find('p', class_='block__related_about_title').text,
-                'price': self.clear_double_data_str(item_data.find(
-                    'div', class_='block__related_details_sum').find('span').text),
+                'publication_date': self.clear_date_str(item_data['date_published2']),
+                'type': item_data['procedure_type'],
+                'price': item_data['total_price'],
+                'org': item_data['full_name'],
+                'currency': item_data['currency_name'],
             })
         return item_list
 
     @staticmethod
-    def find_lot_row(lot_div, block_name, search_str):
-        lot_data_containers = lot_div.find_all('div', class_='block__docs_container')
-        lot_blocks_map = {
-            'Этапы закупочной процедуры': lot_data_containers[0],
-            'Цена договора и требования к обеспечению': lot_data_containers[0],
-            'Условия договора': lot_data_containers[3],
-            'Заказчики, с которыми заключается договор': lot_data_containers[6],
-            #'Классификатор ОКПД2': lot_data_containers[7],
-            #'Классификатор ОКВЭД2': lot_data_containers[8],
-            'Документация лота': lot_data_containers[9],
-            #'Перечень товаров, работ, услуг': lot_data_containers[10]
-        }
-        for row in lot_blocks_map[block_name].find_all('div', class_='block__docs_container_cell'):
-            cells = row.find_all('p')
-            if cells[0].text.strip() == search_str:
-                return ''.join(cells[1].findAll(text=True)).strip()
-        return None
+    def get_region_from_address(address_str):
+        for key in REGION_MAP.keys():
+            if key in address_str.lower():
+                return REGION_MAP[key]
 
-    def get_lot_delivery_place(self, lot_div):
-        full_string = self.find_lot_row(
-            lot_div, 'Условия договора', 'Место поставки товаров/выполнения работ/оказания услуг'
-        )
-        drop_string = lot_div.find('a', class_='price_nds price_nds--forPrint').text
-        return full_string.replace(drop_string, '').strip()
-
-    @staticmethod
-    def get_lot_okpd_okved(lot_div, okpd2=False, okved2=False):
-        if okpd2:
-            data_container = lot_div.find_all('div', class_='block__docs_container')[7]
-        elif okved2:
-            data_container = lot_div.find_all('div', class_='block__docs_container')[8]
-        else:
-            return None
-        items = data_container.find_all('div', class_='block__docs_container_cell')
-        if len(items) == 1 and items[0].findAll(text=True)[0] == 'Отсутствуют':
-            return None
-        result = []
-        for item in items:
-            result.append('{} {}'.format(item.find('p').text, item.find('h4').text))
-        return result
-
-    @staticmethod
-    def get_region_from_address(address):
-        address = address.lower()
-        for key, item in REGION_MAP.items():
-            if address.find(key) != -1:
-                return item
-
-    @staticmethod
-    def get_lot_positions(lot_div):
-        positions_data = lot_div.find(
-            'div', class_='block__docs_container block__docs_container_works'
-        ).find_all('div', class_='block__docs_container_cell')
-        positions = []
-        for position in positions_data:
-            positions.append({
-                'name': position.find('h4').text,
-                'quantity': position.find('span', class_='block__docs_container_info_number').text
-            })
-        return positions
-
-    @staticmethod
-    def get_currency_from_docs_container(data_html):
-        return data_html.find(
-            'div', class_='block__docs first'
-        ).find_all('div', class_='block__docs_container_cell')[4].find(
-            'span', class_='price_nds'
-        ).text
-
-    def get_tender_lots_data(self, data_html):
-        lots_divs = data_html.find_all('div', class_='block__docs_lot_content')
+    def get_tender_lots_data(self, tender_data_dict):
         lots = []
-        for num, lot_div in enumerate(lots_divs, start=1):
-            currency = self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Валюта')
-            if not currency:
-                currency = self.get_currency_from_docs_container(data_html)
+        for num, lot in enumerate(tender_data_dict['lots'], start=1):
             lots.append({
                 'number': num,
-                'name': self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Предмет договора'),
-                'status': self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Текущий статус'),
-                'customer': self.find_lot_row(
-                    lot_div, 'Заказчики, с которыми заключается договор', 'Наименование заказчика'
-                ),
-                'sub_close_date': self.clear_date_str(
-                    self.find_lot_row(lot_div,
-                                      'Этапы закупочной процедуры', 'Дата и время окончания срока приема заявок')
-                ),
-                'price': self.clear_double_data_str(
-                    self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Начальная цена')
-                ),
+                'name': lot['lot_units'][0]['name'],
+                'type': tender_data_dict['procedure_type_vocab'],
+                'customer': lot['lot_customers'][0]['full_name'],
+                'region': self.get_region_from_address(tender_data_dict['org_postal_address']),
+                'sub_close_date': self.clear_date_str(lot['date_end_registration']),
+                'price': lot['start_price'],
                 'guarantee_app': self.clear_double_data_str(
                     self.find_lot_row(
                         lot_div, 'Цена договора и требования к обеспечению', 'Размер обеспечения заявки (в рублях)'
@@ -168,16 +95,22 @@ class Parser:
                 ),
                 'payment_terms': self.find_lot_row(
                     lot_div, 'Условия договора', 'Условия оплаты и поставки товаров/выполнения работ/оказания услуг'),
-                'quantity': self.find_lot_row(
-                    lot_div, 'Условия договора',
-                    'Количество поставляемого товара/объем выполняемых работ/оказываемых услуг'
-                ),
-                'delivery_place': self.get_lot_delivery_place(lot_div),
+                'delivery_volume': lot['lot_delivery_places'][0]['quantity'],
+                'delivery_place': lot['lot_delivery_places'][0]['address'],
+                'delivery_datetime': self.clear_date_str(lot['lot_delivery_places'][0]['req_dlv_date']),
+                'delivery_term': lot['lot_delivery_places'][0]['term'],
+                'delivery_basis': lot['lot_delivery_places'][0]['basis'],
+                'quantity': lot['lot_units'][0]['quantity'],
+                'trade_mark': lot['lot_units'][0]['trade_mark'],
+                'units_symbol': lot['lot_units'][0]['okei_symbol'],
+                'org': tender_data_dict['org_full_name'],
+                'org_address': tender_data_dict['org_postal_address'],
+                'org_fio': tender_data_dict['organizer_user_full_name'],
+                'org_phone':tender_data_dict['contact_phone'],
+                'org_email': tender_data_dict['contact_email'],
                 'order_view_date': self.clear_date_str(
                     self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время вскрытия заявок')),
-                'scoring_date': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата подведения итогов')
-                ),
+                'scoring_date': self.clear_date_str(lot['date_end_second_parts_review'])),
                 'scoring_datetime': self.clear_date_str(
                     self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Подведение итогов не позднее')
                 ),
@@ -190,7 +123,7 @@ class Parser:
                 'trade_date': self.clear_date_str(
                     self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время проведения')
                 ),
-                'currency': currency,
+                'currency': lot['currency_vocab'],
                 'positions': self.get_lot_positions(lot_div),
                 'okpd2': self.get_lot_okpd_okved(lot_div, okpd2=True),
             })
