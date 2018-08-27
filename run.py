@@ -4,7 +4,7 @@ from settings import sleep_time
 
 
 if __name__ == "__main__":
-    collector = Collector(quantity=None, publish_date=None, base_url='https://zakupki.tmk-group.com/')
+    collector = Collector(quantity=None, publish_date=None, base_url='https://zakupki.tmk-group.com')
     while True:
         collector.collect()
         break

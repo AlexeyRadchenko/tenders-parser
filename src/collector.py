@@ -61,7 +61,7 @@ class Collector:
             if count == self.quantity:
                 break
 
-    def process_tender(self, item):
+    def process_tender(self, item, types=[], status=[]):
         """
         Метод обработки тендера
         Последовательность действий:
@@ -74,28 +74,32 @@ class Collector:
         tender_data_dict = self.http.get_tender_data(item['id'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_dict)
         multilot = True if len(tender_lots) > 1 else False
-        #org = self.parser.get_org_data(tender_data_html)
-        #attachments = self.parser.get_attachments(tender_data_html)
-        print(tender_lots, multilot)
-        """
+        #print(tender_lots, multilot)
+
         for lot in tender_lots:
             tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
-            dbmodel = self.repository.get_one(tender_lot_id)
-            if dbmodel is None or dbmodel['status'] != lot['status']:
-            #if True:
-                model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
+            #dbmodel = self.repository.get_one(tender_lot_id)
+            #if dbmodel is None or dbmodel['status'] != lot['status']:
+            if True:
+                #model = self.mapper.map(item, multilot, lot, tender_lot_id)
                 #print(model)
-                
+                if lot['type'] not in types:
+                    types.append(lot['type'])
+                if lot['status'] not in status:
+                    status.append(lot['status'])
+                """
                 short_model = {
                     '_id': model['id'],
                     'status': model['status']
                 }
-
+                
                 # добавляем/обновляем в MongoDB
-
+                
                 self.repository.upsert(short_model)
                 print('Upserted in MongoDB')
 
                 # отправляем в RabbitMQ
                 self.rabbitmq.publish(model)
                 print('Published to RabbitMQ')"""
+        print(types)
+        print(status)

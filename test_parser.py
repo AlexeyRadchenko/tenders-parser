@@ -1,6 +1,7 @@
 import unittest
 
 from src.bll.parser import Parser
+from bs4 import BeautifulSoup
 import json
 
 
@@ -8,8 +9,8 @@ class Unittest(unittest.TestCase):
 
     def setUp(self):
         self.parser = Parser(base_url='https://zakupki.tmk-group.com')
-        self.path_tender_list = '../files/tender_list.json'
-        self.path_tender_data = '../files/tender_data.json'
+        self.path_tender_list = 'test/files/tender_list.json'
+        self.path_tender_data = 'test/files/tender_data.json'
 
     def test_get_part_data(self):
         with open(self.path_tender_list) as data_file:

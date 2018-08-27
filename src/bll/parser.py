@@ -15,7 +15,7 @@ class Parser:
         if not date_str:
             return None
         try:
-            date = re.search(r'\d\d\.\d\d\.\d\d\d\d', date_str).group(0)
+            date = re.search(r'\d\d\d\d-\d\d-\d\d', date_str).group(0)
         except AttributeError:
             return None
 
@@ -25,7 +25,6 @@ class Parser:
             time = ''
 
         date_time_str = '{} {}'.format(date, time).strip()
-
 
         try:
             if 'GMT' not in date_str:
@@ -46,7 +45,7 @@ class Parser:
                 'id': item_data['id'],
                 'number': item_data['registry_number'],
                 'name': item_data['title'],
-                'link': '{}{}{}'.format(self.base_url, '#com/procedure/view/procedure/', item_data['id']),
+                'link': '{}{}{}'.format(self.base_url, '/#com/procedure/view/procedure/', item_data['id']),
                 'publication_date': self.clear_date_str(item_data['date_published2']),
                 'type': item_data['procedure_type'],
                 'price': item_data['total_price'],
@@ -81,20 +80,48 @@ class Parser:
                 'number': num,
                 'name': lot['subject'],
                 'type': tender_data_dict['procedure_type_vocab'],
-                'customer': lot['lot_customers'][0]['full_name'],
-                'region': self.get_region_from_address(tender_data_dict['org_postal_address']),
+                'customers': [
+                    {
+                        'guid': None,
+                        'name': customer['full_name'],
+                        'region': self.get_region_from_address(customer['address'])
+                    }
+                    for customer in lot['lot_customers']
+                ],
+                'customers_inn_kpp_name_region': [
+                    (
+                        customer['inn'],
+                        customer['kpp'],
+                        customer['full_name'],
+                        self.get_region_from_address(customer['address']),
+                    ) for customer in lot['lot_customers']],
+                'org_region': self.get_region_from_address(tender_data_dict['org_postal_address']),
                 'sub_close_date': self.clear_date_str(lot['date_end_registration']),
+                'scoring_date': self.clear_date_str(lot['date_end_second_parts_review']),
+                'last_edit_date': self.clear_date_str(tender_data_dict['date_last_edited']),
                 'price': lot['start_price'],
-                'delivery_volume': lot['lot_delivery_places'][0]['quantity'],
-                'delivery_place': lot['lot_delivery_places'][0]['address'],
-                'delivery_datetime': self.clear_date_str(lot['lot_delivery_places'][0]['req_dlv_date']),
-                'delivery_term': lot['lot_delivery_places'][0]['term'],
-                'delivery_basis': lot['lot_delivery_places'][0]['basis'],
+                'delivery_volume': ' '.join([delivery['quantity'] for delivery in lot['lot_delivery_places']]),
+                'delivery_place': ' '.join([delivery['address'] for delivery in lot['lot_delivery_places']]),
+                'delivery_datetime': ' '.join([delivery['req_dlv_date'] for delivery in lot['lot_delivery_places']]),
+                'delivery_term': ' '.join([delivery['term'] for delivery in lot['lot_delivery_places']]),
+                'delivery_basis': ' '.join([delivery['basis'] for delivery in lot['lot_delivery_places']]),
+                'delivery_comment': ' '.join([delivery['comment'] for delivery in lot['lot_delivery_places']]),
                 'org': tender_data_dict['org_full_name'],
                 'org_address': tender_data_dict['org_postal_address'],
                 'org_fio': tender_data_dict['organizer_user_full_name'],
                 'org_phone': tender_data_dict['contact_phone'],
                 'org_email': tender_data_dict['contact_email'],
-                'positions': self.get_lot_postitions(lot['lot_units'])
+                'positions': self.get_lot_postitions(lot['lot_units']),
+                'attachments': [{
+                        'displayName': file['descr'],
+                        'realName': file['name'],
+                        'size': file['size'],
+                        'publicationDateTime': self.tools.get_utc_epoch(self.clear_date_str(file['date'])[0]),
+                        'href': '{}{}'.format(self.base_url, file['link'])
+                    }
+                    for file in tender_data_dict['common_files']
+                ],
+                'status': lot['lot_step'],
+                'currency': lot['currency_vocab']
             })
         return lots
