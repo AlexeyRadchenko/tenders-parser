@@ -70,6 +70,7 @@ class Parser:
                 'trade_mark': pos['trademark'],
                 'units_symbol': pos['okei_symbol'],
                 'okdp?': pos['category_code'],
+                'requirements': pos['requirements']
             })
         return lot_positions
 
@@ -103,9 +104,11 @@ class Parser:
                 'delivery_volume': ' '.join([delivery['quantity'] for delivery in lot['lot_delivery_places']]),
                 'delivery_place': ' '.join([delivery['address'] for delivery in lot['lot_delivery_places']]),
                 'delivery_datetime': ' '.join([delivery['req_dlv_date'] for delivery in lot['lot_delivery_places']]),
-                'delivery_term': ' '.join([delivery['term'] for delivery in lot['lot_delivery_places']]),
+                'delivery_term': ' '.join([delivery['term'] for delivery in lot['lot_delivery_places']]
+                                          ).replace('\n', ' '),
                 'delivery_basis': ' '.join([delivery['basis'] for delivery in lot['lot_delivery_places']]),
-                'delivery_comment': ' '.join([delivery['comment'] for delivery in lot['lot_delivery_places']]),
+                'delivery_comment': ' '.join([delivery['comment'] for delivery in lot['lot_delivery_places']]
+                                             ).replace('\n', ' '),
                 'org': tender_data_dict['org_full_name'],
                 'org_address': tender_data_dict['org_postal_address'],
                 'org_fio': tender_data_dict['organizer_user_full_name'],

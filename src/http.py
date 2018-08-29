@@ -64,7 +64,7 @@ class Http:
             if res is not None and res.status_code == 200:
                 result = res.json()
                 total = result['result']['totalCount']
-                print(total, total - self.init_tenders_list_request_json['data'][0]['start'])
+                #print(total, total - self.init_tenders_list_request_json['data'][0]['start'])
                 yield result['result']['procedures']
                 if total - self.init_tenders_list_request_json['data'][0]['start'] > 25:
                     self.init_tenders_list_request_json['data'][0]['start'] += 25

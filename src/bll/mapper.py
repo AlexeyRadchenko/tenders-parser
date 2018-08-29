@@ -15,7 +15,7 @@ class Mapper:
     def get_organisations_search(customers_req):
         return ' '.join(
             ['{} {} {} {}'.format(inn, kpp, name, region) for inn, kpp, name, region in customers_req]
-        )
+        ).replace('None', '')
 
     @staticmethod
     def get_global_search(item, lot):
@@ -74,13 +74,13 @@ class Mapper:
                 'name': 'Трубная металлургическая компания',
             },
             # Дата публикации тендера UNIX EPOCH (UTC)
-            'publicationDateTime': self.tools.get_utc_epoch(item['publication_date']),
+            'publicationDateTime': self.tools.get_utc_epoch(item['publication_date'][0]),
             'region': lot['org_region'],
             # Дата окончания подачи заявок UNIX EPOCH (UTC)
             'submissionCloseDateTime': self.tools.get_utc_epoch(
-                lot['sub_close_date']) if lot['sub_close_date'] else None,
+                lot['sub_close_date'][0]) if lot['sub_close_date'] else None,
             # Дата начала подачи заявок UNIX EPOCH (UTC)
-            'submissionStartDateTime': self.tools.get_utc_epoch(item['publication_date']),
+            'submissionStartDateTime': self.tools.get_utc_epoch(item['publication_date'][0]),
             'tenderSearch': self.get_tender_search(item, lot),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
@@ -95,12 +95,12 @@ class Mapper:
             'preference': [],
             'prepayment': None,
             'modification': {
-                'modDateTime': self.tools.get_utc_epoch(lot['last_edit_date']),
+                'modDateTime': self.tools.get_utc_epoch(lot['last_edit_date'][0]),
                 "reason": None
             },
             'futureNumber': None,
             'guid': None,
-            'scoringDateTime': self.tools.get_utc_epoch(lot['scoring_date']),
+            'scoringDateTime': self.tools.get_utc_epoch(lot['scoring_date'][0]),
             'biddingDateTime': None,
         }
 
@@ -214,7 +214,7 @@ class Mapper:
                     max_price=model['maxPrice'],
                     guarantee_app=None,
                     guarantee_contract=None,
-                    customer_guid=' '.join([customer['guid'] for customer in model['customers']]),
+                    customer_guid=None,
                     customer_name=' '.join([customer['name'] for customer in model['customers']]),
                     currency=lot['currency']
                 )
@@ -264,7 +264,7 @@ class Mapper:
                                         pos['type_vocab'],
                                         pos['value'].replace('::', ' ')
                                     ) for pos in position.get('requirements')]
-                                ),
+                                ) if position.get('requirements') else None,
                                 modifications=[]
                             ),
                             Cell(
