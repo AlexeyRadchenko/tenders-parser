@@ -60,7 +60,24 @@ class Customer(object):
         ))
         return self
 
-    def set_properties(self, max_price=None, guarantee_app=None, guarantee_contract=None, customer_guid=None, customer_name=None):
+    def add_currency(self, currency):
+        self.entities.append(Field(
+            value=currency,
+            name="currency",
+            displayName="Валюта",
+            type=FieldType.String,
+            modifications=[]
+        ))
+        return self
+
+    def set_properties(
+            self, max_price=None,
+            guarantee_app=None,
+            guarantee_contract=None,
+            customer_guid=None,
+            customer_name=None,
+            currency=None
+    ):
         if max_price:
             self.add_max_price(max_price)
         if guarantee_app:
@@ -69,6 +86,8 @@ class Customer(object):
             self.add_guarantee_contract(guarantee_contract)
         if customer_guid or customer_name:
             self.add_customer_info(customer_guid, customer_name)
+        if currency:
+            self.add_currency(currency)
         return self
 
     def compare(self, other, other_date, self_date):

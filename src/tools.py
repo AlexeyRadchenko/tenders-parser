@@ -48,12 +48,10 @@ class Tools:
                                      '%d.%m.%Y')
             return date
 
-    def get_utc_epoch(self, date_string, time_delta):
+    def get_utc_epoch(self, date_string, time_delta=3):
         """
         Парсинг дат и перевод их к виду UNIX EPOCH
         """
-        if not time_delta:
-            time_delta = 3
         if date_string is None or date_string.strip() == '':
             return None
         parts_date = date_string.split(' ')
@@ -82,7 +80,6 @@ class Tools:
         Текущая дата/время в UNIX EPOCH
         """
         return int(time.time()) * 1000
-
 
 REGION_MAP = {
     "москва": 77,

@@ -1,6 +1,5 @@
 from src.bll.retrier import retry
-from requests import get
-from bs4 import BeautifulSoup
+from requests import post
 
 
 class Http:
@@ -10,37 +9,46 @@ class Http:
         else:
             self.proxy = None
 
-    source_url = 'https://etpgpb.ru/procedures/page/{}/?procedure[category]=actual&procedure[section][0]' \
-                 '=common&procedure[section][1]=gazprom'
+    tenders_source_url_list = [
+        'https://www.nornickel.ru/ajax/tenders-centralized.php',
+        'https://www.nornickel.ru/ajax/tenders-local.php'
+    ]
+
+    init_request_form_data = {
+        'draw': '1',
+        'length': '100',
+        'search[regex]': 'false',
+        'search[value]': '',
+        'start': '0'
+    }
+
+    def reset_param(self):
+        self.init_request_form_data['draw'] = '1'
+        self.init_request_form_data['start'] = '0'
+        return 0
 
     def get_tender_list(self):
         """генератор списков тендеров"""
-        page = 1
-        while True:
-            #print(page)
-            page_url = self.source_url.format(page)
-            r = get(page_url, proxies=self.proxy)
-            res = retry(r, 5, 100)
-            if res is not None and res.status_code == 200:
-                html = BeautifulSoup(res.content, 'lxml')
-                items_div = html.find('div', {'data-view': 'full'})
-                if items_div:
-                    items_data_list = items_div.find_all('a')
-                    yield items_data_list
-                    page += 1
-                else:
-                    break
-            elif res.status_code == 500:
-                break
-
-    def get_tender_data(self, url):
-        """данные отдельного тендера"""
-        r = get(url, proxies=self.proxy)
-        res = retry(r, 5, 100)
-        if res is not None and res.status_code == 200:
-            html = BeautifulSoup(res.content, 'lxml')
-            return html
-        return None
+        records = 0
+        for i, url in enumerate(self.tenders_source_url_list):
+            while True:
+                r = post(url, data=self.init_request_form_data, proxies=self.proxy)
+                res = retry(r, 5, 100)
+                if res is not None and res.status_code == 200:
+                    data = res.json()
+                    records += len(data['data'])
+                    print(records, data['recordsTotal'])
+                    yield data['data']
+                    if records < int(data['recordsTotal']):
+                        self.init_request_form_data['draw'] = str(int(self.init_request_form_data['draw']) + 1)
+                        self.init_request_form_data['start'] = str(int(self.init_request_form_data['start']) + 100)
+                    elif records >= int(data['recordsTotal']) and self.init_request_form_data.get('archive') is None:
+                        self.init_request_form_data['archive'] = 'true'
+                        records = self.reset_param()
+                    else:
+                        del self.init_request_form_data['archive']
+                        records = self.reset_param()
+                        break
 
     def get_organization(self, customers):
         result = []
@@ -60,3 +68,4 @@ class Http:
             #   customer['inn'], customer['kpp'], customer['name'])
             # r = requests.get(url)
             # return r.json()
+
