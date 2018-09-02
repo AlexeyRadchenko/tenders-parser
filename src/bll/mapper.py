@@ -38,7 +38,7 @@ class Mapper:
             item['customer'] if item['customer'] else ''
         )
 
-    def map(self, item, tender_id):
+    def map(self, item):
         """
         Функция маппинга итоговой модели
         """
@@ -46,7 +46,7 @@ class Mapper:
         model = {
             # Идентификатор тендера (Тендер+Лот)
             # Для каждого лота в тендере создается отдельная модель
-            'id': tender_id,
+            'id': item['id'],
             # Массив заказчиков
             # [{
             #   guid = идентификатор организации (str/None),
@@ -248,7 +248,7 @@ class Mapper:
                 ).add_field(
                     Field(
                         name='AcceptOrderEndDateTime',
-                        displayName='Дата окончания приема заявок"',
+                        displayName='Дата окончания приема заявок',
                         value=model['submissionCloseDateTime'],
                         type=FieldType.DateTime,
                         modifications=[Modification.Calendar]

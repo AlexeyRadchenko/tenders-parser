@@ -37,7 +37,8 @@ class Http:
                 if res is not None and res.status_code == 200:
                     data = res.json()
                     records += len(data['data'])
-                    print(records, data['recordsTotal'])
+                    #print(records, data['recordsTotal'])
+                    #print(data)
                     yield data['data']
                     if records < int(data['recordsTotal']):
                         self.init_request_form_data['draw'] = str(int(self.init_request_form_data['draw']) + 1)

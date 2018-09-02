@@ -1,0 +1,26 @@
+{"recordsTotal": "2",
+  "draw": "1", 
+  "recordsFiltered": "2",
+  "data": [
+    {
+      "how_apply": "В Системе управления закупками SRM Норникель",
+      "address": "123100, г. Москва, 1-й Красногвардейский проезд, д.15",
+      "contacts": "<a href='mailto:ootp@nirnik.ru' class='link'>ootp@nirnik.ru</a><br><span>+7(495)787-76-67 доб.5280</span>",
+      "customer": "ДПиУТМП",
+      "deadline": "<nobr>31.08.2018</nobr>",
+      "organizer": "ПАО 'ГМК 'Норильский никель'",
+      "subject_procurement": "<p class='file-list__group'><span class='file-list__item file-list__item--rar file-list__item--custom'><a href='/upload/iblock/d11/K-Priglasheniyu.rar' class='link file-list__link' target='_blank'>Выполнение работ по тиражированию и развитию системы взаимодействия с поставщиками SAP SRМ</a><span class='file-list__size'>2 Мб</span></span></p>",
+      "method_carrying": "Запрос предложений"
+    },
+    {
+      "how_apply": "В Системе управления закупками SRM Норникель",
+      "address": "г.Москва', 'contacts': '<a href='mailto:ootp@nornik.ru' class='link'>ootp@nornik.ru</a><br><span>+7 495 787-76-67 доб.5280</span>",
+      "contacts": "<a href='mailto:ootp@nornik.ru' class='link'>ootp@nornik.ru</a><br><span>+7 495 787-76-67 доб.5280</span>",
+      "customer": "ДИТ ГО', 'deadline': '<nobr>29.08.2018</nobr>",
+      "deadline": "<nobr>29.08.2018</nobr>",
+      "organizer": "ПАО 'ГМК 'Норильский никель'",
+      "subject_procurement": "<p class='file-list__group'><span class='file-list__item file-list__item--rar file-list__item--custom'><a href='/upload/iblock/610/Publikatsiya-210818.rar' class='link file-list__link' target='_blank'>Выполнение работ, поставка программно-аппаратного комплекса в рамках проекта IT.P.14-91.3 «Создание и внедрение системы резервного копирования»</a><span class='file-list__size'>3 Мб</span></span></p>",
+      "method_carrying": "Запрос предложений"
+    }
+  ]
+}
