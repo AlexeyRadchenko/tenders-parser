@@ -11,12 +11,25 @@ class Parser:
         self.base_url = base_url
 
     @staticmethod
+    def get_tender_data(tender_div):
+        data_block = tender_div.find('dl')
+        data_name_list = data_block.find_all('dt')
+        data_value_list = data_block.find_all('dd')
+        data_map = {}
+        for index, name in enumerate(data_name_list):
+            data_map[name.text] = data_value_list[index].text
+        return data_map
+
+    @staticmethod
     def item_filter(item_data):
         """если номера тендера содержит букву возвращаем его """
-        regex = re.compile(r'\D')
-        number = item_data.find('p', {'itemprop': 'name'}).text.split()[-1]
-        clear_number = number.strip()
-        return clear_number if regex.match(clear_number) else None
+        regex = re.compile(r'ГП\d+')
+        if (item_data.get('Предмет') and regex.search(item_data.get('Предмет'))) or \
+                (item_data.get('Номер процедуры') and regex.search(item_data.get('Номер процедуры'))) or \
+                'https://etp.gpb.ru' == item_data.get('Место рассмотрения'):
+            return False
+        else:
+            return True
 
     @staticmethod
     def clear_date_str(date_str):
@@ -58,39 +71,28 @@ class Parser:
         """парсим строки пришедшие в запросе возвращаем список первичных данных"""
         item_list = []
         for item_data in data_list:
-            item_number = self.item_filter(item_data)
-            if item_number:
-                #print(item_number)
+            item_data_map = self.get_tender_data(item_data)
+            if self.item_filter(item_data_map):
+                sub_start_close_date = item_data_map.get('Срок приёма заявок').split(' - ')
                 item_list.append({
-                    'number': item_number,
-                    'name': item_data.find('p', {'itemprop': 'description'}).text,
-                    'link': self.base_url + item_data.attrs['href'],
-                    'sub_close_date': self.clear_date_str(item_data.find(
-                        'p', class_='block__related_details_date').text),
-                    'type': item_data.find('p', class_='block__related_about_title').text,
-                    'price': self.clear_double_data_str(item_data.find(
-                        'div', class_='block__related_details_sum').find('span').text),
+                    'number': 'xz',
+                    'name': item_data.find('h4').text,
+                    'region': 66,
+                    'customer': 'ПАО Уралмашзавод',
+                    'sub_start_date': sub_start_close_date[0],
+                    'sub_close_date': sub_start_close_date[1],
+                    'scoring_date': item_data_map.get('Дата подведения итогов'),
+                    'type': item_data_map.get('Способ'),
+                    'currency': item_data_map.get('Валюта'),
+                    'subject': item_data_map.get('Предмет'),
+                    'scoring_place': item_data_map.get('Место рассмотрения'),
+                    'fio': item_data_map.get('ФИО ответственного'),
+                    'phone': item_data_map.get('Телефон ответственного'),
+                    'email': item_data_map.get('E-mail ответственного'),
+                    'publication_date': item_data.find('p', {'class': 'date'}).find('strong').text
                 })
         return item_list
 
-    @staticmethod
-    def find_lot_row(lot_div, block_name, search_str):
-        lot_data_containers = lot_div.find_all('div', class_='block__docs_container')
-        lot_blocks_map = {
-            'Этапы закупочной процедуры': lot_data_containers[0],
-            'Цена договора и требования к обеспечению': lot_data_containers[0],
-            'Условия договора': lot_data_containers[3],
-            'Заказчики, с которыми заключается договор': lot_data_containers[6],
-            #'Классификатор ОКПД2': lot_data_containers[7],
-            #'Классификатор ОКВЭД2': lot_data_containers[8],
-            'Документация лота': lot_data_containers[9],
-            #'Перечень товаров, работ, услуг': lot_data_containers[10]
-        }
-        for row in lot_blocks_map[block_name].find_all('div', class_='block__docs_container_cell'):
-            cells = row.find_all('p')
-            if cells[0].text.strip() == search_str:
-                return ''.join(cells[1].findAll(text=True)).strip()
-        return None
 
     def get_lot_delivery_place(self, lot_div):
         full_string = self.find_lot_row(

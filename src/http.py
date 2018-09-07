@@ -10,24 +10,30 @@ class Http:
         else:
             self.proxy = None
 
-    source_url = 'https://etpgpb.ru/procedures/page/{}/?procedure[category]=actual&procedure[section][0]' \
-                 '=common&procedure[section][1]=gazprom'
+    source_url = 'https://www.uralmash.ru/tenders/'
+    init_request_params = {
+        'PAGEN_1': 1
+    }
+
+    def get_max_pages(self, data_html):
+        return int(data_html.find('ul', {'class': 'pagination'}).find_all('a')[-2:][0].text)
 
     def get_tender_list(self):
         """генератор списков тендеров"""
-        page = 1
+        max_pages = None
         while True:
-            #print(page)
-            page_url = self.source_url.format(page)
-            r = get(page_url, proxies=self.proxy)
+            r = get(self.source_url, params=self.init_request_params, proxies=self.proxy)
             res = retry(r, 5, 100)
             if res is not None and res.status_code == 200:
                 html = BeautifulSoup(res.content, 'lxml')
-                items_div = html.find('div', {'data-view': 'full'})
-                if items_div:
-                    items_data_list = items_div.find_all('a')
+                items_div = html.find('div', {'class': 'newsWrapper'})
+                if not max_pages:
+                    max_pages = self.get_max_pages(html)
+                print(self.init_request_params['PAGEN_1'], max_pages)
+                if items_div and self.init_request_params['PAGEN_1'] <= max_pages:
+                    items_data_list = items_div.find('div', {'class': 'row'}).find_all('div', {'class': 'newsItem'})
                     yield items_data_list
-                    page += 1
+                    self.init_request_params['PAGEN_1'] += 1
                 else:
                     break
             elif res.status_code == 500:
