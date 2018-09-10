@@ -70,33 +70,23 @@ class Collector:
         * Если что-то поменялось (статус), то обновляем в базе и отсылаем в очередь
           Иначе пропускаем
         """
-        """
-        # Получение HTML страницы с данными тендера
-        tender_data_html = self.http.get_tender_data(item['link'])
-        tender_lots = self.parser.get_tender_lots_data(tender_data_html)
-        multilot = True if len(tender_lots) > 1 else False
-        org = self.parser.get_org_data(tender_data_html)
-        attachments = self.parser.get_attachments(tender_data_html)
-        #print(item, tender_lots, org, attachments, multilot)
 
-        for lot in tender_lots:
-            tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
-            dbmodel = self.repository.get_one(tender_lot_id)
-            if dbmodel is None or dbmodel['status'] != lot['status']:
-            #if True:
-                model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
-                #print(model)
-                
-                short_model = {
-                    '_id': model['id'],
-                    'status': model['status']
-                }
+        #dbmodel = self.repository.get_one(item['id'])
+        #if dbmodel is None or dbmodel['status'] != item['status']:
+        if True:
+            model = self.mapper.map(item)
+            print(model)
 
-                # добавляем/обновляем в MongoDB
-               
-                self.repository.upsert(short_model)
-                print('Upserted in MongoDB')
+            short_model = {
+                '_id': model['id'],
+                'status': model['status']
+            }
 
-                # отправляем в RabbitMQ
-                self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')"""
+            # добавляем/обновляем в MongoDB
+            """
+            self.repository.upsert(short_model)
+            print('Upserted in MongoDB')
+
+            # отправляем в RabbitMQ
+            self.rabbitmq.publish(model)
+            print('Published to RabbitMQ')"""

@@ -3,6 +3,11 @@ from requests import get
 from bs4 import BeautifulSoup
 
 
+class PaginationError(Exception):
+    def __init__(self, text):
+        self.text = text
+
+
 class Http:
     def __init__(self, proxy=None):
         if proxy and proxy.get('enabled'):
@@ -16,7 +21,11 @@ class Http:
     }
 
     def get_max_pages(self, data_html):
-        return int(data_html.find('ul', {'class': 'pagination'}).find_all('a')[-2:][0].text)
+        max_pages = int(data_html.find('ul', {'class': 'pagination'}).find_all('a')[-2:][0].text)
+        if max_pages:
+            return max_pages
+        else:
+            raise PaginationError("Max pages value not found in response html")
 
     def get_tender_list(self):
         """генератор списков тендеров"""
@@ -29,7 +38,7 @@ class Http:
                 items_div = html.find('div', {'class': 'newsWrapper'})
                 if not max_pages:
                     max_pages = self.get_max_pages(html)
-                print(self.init_request_params['PAGEN_1'], max_pages)
+                # print(self.init_request_params['PAGEN_1'], max_pages)
                 if items_div and self.init_request_params['PAGEN_1'] <= max_pages:
                     items_data_list = items_div.find('div', {'class': 'row'}).find_all('div', {'class': 'newsItem'})
                     yield items_data_list
