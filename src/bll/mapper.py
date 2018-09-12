@@ -17,7 +17,7 @@ class Mapper:
         return lot['customer'] if lot['customer'] else ''
 
     @staticmethod
-    def get_customer_model_list(lot, org):
+    def get_customer_model_list(customer):
         return [{
             'guid': None,
             'name': lot['customer'] if lot['customer'] else org['name'],
@@ -54,7 +54,7 @@ class Mapper:
             })
         return attachments
 
-    def map(self, item, multilot, org, attachments, lot, tender_lot_id):
+    def map(self, item):
         """
         Функция маппинга итоговой модели
         """
@@ -62,14 +62,14 @@ class Mapper:
         model = {
             # Идентификатор тендера (Тендер+Лот)
             # Для каждого лота в тендере создается отдельная модель
-            'id': tender_lot_id,
+            'id': item['id'],
             # Массив заказчиков
             # [{
             #   guid = идентификатор организации (str/None),
             #   name = название организации (str),
             #   region = регион организации (int/None),
             # }]
-            'customers': self.get_customer_model_list(lot, org),
+            'customers': self.get_customer_model_list(item['customer']),
             # массив документов
             'attachments': self.get_attachments(attachments),
             'globalSearch': self.get_global_search(item, lot),

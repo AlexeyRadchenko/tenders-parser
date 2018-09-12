@@ -70,31 +70,22 @@ class Collector:
         # Получение HTML страницы с данными тендера
         tender_data_html = self.http.get_tender_data(item)
         tender_lot = self.parser.get_tender_lots_data(tender_data_html, item)
-        print(tender_lot)
-        """
-        multilot = True if len(tender_lots) > 1 else False
-        org = self.parser.get_org_data(tender_data_html)
-        attachments = self.parser.get_attachments(tender_data_html)
-        #print(item, tender_lots, org, attachments, multilot)
+        #dbmodel = self.repository.get_one(tender_lot['id'])
+        #if dbmodel is None or dbmodel['status'] != tender_lot['status']:
+        if True:
+            model = self.mapper.map(tender_lot)
+            print(model)
 
-        for lot in tender_lots:
-            tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
-            dbmodel = self.repository.get_one(tender_lot_id)
-            if dbmodel is None or dbmodel['status'] != lot['status']:
-            #if True:
-                model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
-                #print(model)
+            short_model = {
+                '_id': model['id'],
+                'status': model['status']
+            }
 
-                short_model = {
-                    '_id': model['id'],
-                    'status': model['status']
-                }
+            # добавляем/обновляем в MongoDB
+            """
+            self.repository.upsert(short_model)
+            print('Upserted in MongoDB')
 
-                # добавляем/обновляем в MongoDB
-
-                self.repository.upsert(short_model)
-                print('Upserted in MongoDB')
-
-                # отправляем в RabbitMQ
-                self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')"""
+            # отправляем в RabbitMQ
+            self.rabbitmq.publish(model)
+            print('Published to RabbitMQ')"""

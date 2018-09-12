@@ -37,17 +37,17 @@ class Parser:
         tech_part_date = self.find_lot_row(info_block, 'Дата продления Технической части:')
         if not tech_part_date:
             tech_part_date = self.find_lot_row(info_block, 'Дата принятия Технической части:')
-        return tech_part_date
+        return self.get_first(tech_part_date)
 
     def get_commercial_part_date(self, info_block):
         commercial_part_date = self.find_lot_row(info_block, 'Дата продления Коммерческой части:')
         if not commercial_part_date:
             commercial_part_date = self.find_lot_row(info_block, 'Дата принятия Коммерческой части:')
-        return commercial_part_date
+        return self.get_first(commercial_part_date)
 
     def get_tender_status(self, info_block):
         tech_part_date = self.get_tech_part_date(info_block)
-        clear_tech_date = self.tools.get_utc_epoch(tech_part_date[0])
+        clear_tech_date = self.tools.get_utc_epoch(tech_part_date)
         current_date = self.tools.get_utc()
         if clear_tech_date > current_date:
             return 1
@@ -61,20 +61,22 @@ class Parser:
         for i, text in enumerate(info_list):
             if '\n3.' in text:
                 if search_info == 'dop':
-                    return ''.join(info_list[i:]).replace('\n', '')
+                    return ''.join(info_list[i:]).replace('\n', '').replace('\xa0', '')
                 elif search_info == 'order':
-                    return ''.join(info_list[:i]).replace('\n', '')
+                    return ''.join(info_list[:i]).replace('\n', '').replace('\xa0', '')
 
     def get_fio_phone_email(self, info_block):
         info_list = self.find_lot_row(info_block, 'Специалист ЦВП:')
-        #print(info_list)
-        phone = info_list[1].replace('телефон:', '').replace(', e-mail:\n', '').split()
-        return info_list[0], phone, info_list[1]
+        phone = re.findall(r'\(\d+\)\s\d\d-\d\d-\d\d', info_list[1])
+        if not phone:
+            phone = re.findall(r'\d\d-\d\d-\d\d', info_list[1])
+        phone = ' '.join(phone) if phone else None
+        return info_list[0], phone, info_list[2]
 
     def get_tender_number(self, text):
         number = re.search(r'Лот[^.]+', text)
         if number:
-            return number.group(0).replace('Лот', '').split()
+            return number.group(0).replace('Лот', '').strip()
 
     def get_tender_attachments(self, info_block):
         doc_url = self.find_lot_row(info_block, 'Техническая документация к лоту:')
@@ -89,11 +91,17 @@ class Parser:
     def get_first(self, data_list):
         return data_list[0] if data_list else None
 
+    def get_tender_id_from_url(self, url):
+        tender_id = re.search(r'\d+$', url)
+        if tender_id:
+            return tender_id.group(0)
+
     def get_tender_lots_data(self, data_html, url):
         info_block = data_html.find_all('div', class_='text-block')[-1]
         #print(self.find_lot_row(info_block, 'Дополнительная информация:'))
         #print(self.get_tender_dop_info(info_block))
         lot = {
+            'id': self.get_tender_id_from_url(url),
             'number': self.get_tender_number(data_html.find('li', class_='active').text),
             'name': data_html.find('div', class_='info-lot').find('p').text,
             'status': self.get_tender_status(info_block),
