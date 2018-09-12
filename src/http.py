@@ -10,32 +10,26 @@ class Http:
         else:
             self.proxy = None
 
-    source_url = 'https://etpgpb.ru/procedures/page/{}/?procedure[category]=actual&procedure[section][0]' \
-                 '=common&procedure[section][1]=gazprom'
+    source_url = 'http://supply.evraz.com'
+    tender_modal_window = {
+        'modalWindow': 'Y'
+    }
 
     def get_tender_list(self):
-        """генератор списков тендеров"""
-        page = 1
-        while True:
-            #print(page)
-            page_url = self.source_url.format(page)
-            r = get(page_url, proxies=self.proxy)
-            res = retry(r, 5, 100)
-            if res is not None and res.status_code == 200:
-                html = BeautifulSoup(res.content, 'lxml')
-                items_div = html.find('div', {'data-view': 'full'})
-                if items_div:
-                    items_data_list = items_div.find_all('a')
-                    yield items_data_list
-                    page += 1
-                else:
-                    break
-            elif res.status_code == 500:
-                break
+        r = get(self.source_url, proxies=self.proxy)
+        res = retry(r, 5, 100)
+        if res is not None and res.status_code == 200:
+            html = BeautifulSoup(res.content, 'lxml')
+            items_div_list = html.find_all('div', {'class': 'panel-body'})
+            result_url_list = []
+            for div in items_div_list:
+                links = div.find_all('a')
+                result_url_list.extend([self.source_url+url.attrs['url'] for url in links])
+            return result_url_list
 
     def get_tender_data(self, url):
         """данные отдельного тендера"""
-        r = get(url, proxies=self.proxy)
+        r = get(url, params=self.tender_modal_window, proxies=self.proxy)
         res = retry(r, 5, 100)
         if res is not None and res.status_code == 200:
             html = BeautifulSoup(res.content, 'lxml')

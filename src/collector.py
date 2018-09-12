@@ -11,6 +11,7 @@ class Collector:
     """
     Класс с логикой сбора
     """
+
     def __init__(self, quantity=None, publish_date=None, base_url=None):
         # Инициализация классов и подключений
         self.http = Http(proxy)
@@ -18,6 +19,7 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
+        """
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
@@ -26,7 +28,7 @@ class Collector:
                                          rabbitmq['port'],
                                          rabbitmq['username'],
                                          rabbitmq['password'],
-                                         rabbitmq['queue'])
+                                         rabbitmq['queue'])"""
 
     def collect(self):
         """
@@ -36,27 +38,23 @@ class Collector:
         *   Получение списка тендеров
         *   Итерация по каждому тендеру
         """
-        # Получение генератора списка данных тендеров
-        tender_data_list_gen = self.http.get_tender_list()
+        # Получение генератора списка ссылок тендеров
+        tender_url_list_gen = self.http.get_tender_list()
         # Обработка тендеров
         count = 0
-        for tender_data_list in tender_data_list_gen:
-            tender_items_list = self.parser.get_part_data(tender_data_list)
-            total = len(tender_items_list)
-            for i, item in enumerate(tender_items_list):
-                if self.publish_date:
-                    if self.publish_date.day == Tools.get_datatime_from_string(item['publication_date']).day:
-                        print('[{}/{}] Processing tender number: {}'.format(i + 1, total, item))
-                        self.process_tender(item)
-                        count += 1
-                    else:
-                        continue
-                else:
-                    print('[{}/{}] Processing tender number: {}'.format(i+1, total, item))
+        total = len(tender_url_list_gen)
+        for i, item in enumerate(tender_url_list_gen):
+            if self.publish_date:
+                if self.publish_date.day == Tools.get_datatime_from_string(item['publication_date']).day:
+                    print('[{}/{}] Processing tender number: {}'.format(i + 1, total, item))
                     self.process_tender(item)
                     count += 1
-                if count == self.quantity:
-                    break
+                else:
+                    continue
+            else:
+                print('[{}/{}] Processing tender number: {}'.format(i + 1, total, item))
+                self.process_tender(item)
+                count += 1
             if count == self.quantity:
                 break
 
@@ -70,8 +68,9 @@ class Collector:
           Иначе пропускаем
         """
         # Получение HTML страницы с данными тендера
-        tender_data_html = self.http.get_tender_data(item['link'])
+        tender_data_html = self.http.get_tender_data(item)
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
+        """
         multilot = True if len(tender_lots) > 1 else False
         org = self.parser.get_org_data(tender_data_html)
         attachments = self.parser.get_attachments(tender_data_html)
@@ -84,7 +83,7 @@ class Collector:
             #if True:
                 model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
                 #print(model)
-                
+
                 short_model = {
                     '_id': model['id'],
                     'status': model['status']
@@ -97,4 +96,4 @@ class Collector:
 
                 # отправляем в RabbitMQ
                 self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')
+                print('Published to RabbitMQ')"""
