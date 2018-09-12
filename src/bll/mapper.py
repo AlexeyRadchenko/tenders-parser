@@ -110,6 +110,14 @@ class Mapper:
             'version': 1,
             'kind': 0,
             'type': 18,
+            'ktru': ["string"],
+            "modification": {
+                'modDateTime': '',
+                'reason': ''
+            },
+            'futureNumber': 'string',
+            'scoringDateTime': 'long',
+            'biddingDateTime': 'long',
         }
 
         model['json'] = self.get_json(
