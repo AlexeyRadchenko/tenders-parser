@@ -67,7 +67,7 @@ class Tools:
                                          '%d.%m.%Y %H:%M:%S') - timedelta(hours=time_delta)
         elif len(parts_date) == 2:
             date = datetime.strptime(date_string.replace('\n', '').replace('\t', '').replace('\r', ''),
-                                     '%d.%m.%Y %H:%M') - timedelta(hours=time_delta)
+                                     '%d.%m.%Y %H:%M:%S') - timedelta(hours=time_delta)
         else:
             date = datetime.strptime(date_string.replace('\n','').replace('\t','').replace('\r',''),
                                      '%d.%m.%Y') - timedelta(hours=time_delta)

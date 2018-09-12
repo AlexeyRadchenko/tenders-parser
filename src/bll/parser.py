@@ -23,20 +23,13 @@ class Parser:
         return '{} {}'.format(date, time)
 
     @staticmethod
-    def clear_double_data_str(data_str):
-        if not data_str or data_str == 'Цена не указана' or data_str == 'Не установлен':
-            return None
-        elif '(сумма блокируется)' in data_str:
-            data_str = data_str.replace('(сумма блокируется)', '').strip()
-        return float(data_str.split('\n')[0].replace(' ', '').replace(',', '.'))
-
-    @staticmethod
     def find_lot_row(lot_div, search_str):
         lot_data_strings = lot_div.find_all('p')
         for row in lot_data_strings:
             row_values = row.findAll(text=True)
-            if row_values[0].strip() == search_str:
-                # return ''.join(cells[1].findAll(text=True)).strip()
+            if search_str == 'Техническая документация к лоту:' and row_values[0].strip() == search_str:
+                return row
+            elif row_values[0].strip() == search_str:
                 return row_values[1:]
         return None
 
@@ -61,101 +54,60 @@ class Parser:
         else:
             return 3
 
-    def get_tender_lots_data(self, data_html):
+    def get_tender_dop_info(self, info_block, search_info=None):
+        info_list = self.find_lot_row(info_block, 'Дополнительная информация:')
+        if not info_list:
+            return None
+        for i, text in enumerate(info_list):
+            if '\n3.' in text:
+                if search_info == 'dop':
+                    return ''.join(info_list[i:]).replace('\n', '')
+                elif search_info == 'order':
+                    return ''.join(info_list[:i]).replace('\n', '')
+
+    def get_fio_phone_email(self, info_block):
+        info_list = self.find_lot_row(info_block, 'Специалист ЦВП:')
+        #print(info_list)
+        phone = info_list[1].replace('телефон:', '').replace(', e-mail:\n', '').split()
+        return info_list[0], phone, info_list[1]
+
+    def get_tender_number(self, text):
+        number = re.search(r'Лот[^.]+', text)
+        if number:
+            return number.group(0).replace('Лот', '').split()
+
+    def get_tender_attachments(self, info_block):
+        doc_url = self.find_lot_row(info_block, 'Техническая документация к лоту:')
+        if doc_url:
+            display_name = doc_url.find('a').text
+            name = re.search(r'[^/]+$', doc_url.find('a').attrs['href'])
+            if name:
+                name = name.group(0)
+            url = self.base_url + doc_url.find('a').attrs['href']
+            return display_name, name, url
+
+    def get_first(self, data_list):
+        return data_list[0] if data_list else None
+
+    def get_tender_lots_data(self, data_html, url):
         info_block = data_html.find_all('div', class_='text-block')[-1]
-        # print(self.find_lot_row(info_block, 'Дополнительная информация:'))
+        #print(self.find_lot_row(info_block, 'Дополнительная информация:'))
+        #print(self.get_tender_dop_info(info_block))
         lot = {
+            'number': self.get_tender_number(data_html.find('li', class_='active').text),
             'name': data_html.find('div', class_='info-lot').find('p').text,
             'status': self.get_tender_status(info_block),
             'customer': 'АО «ЕВРАЗ ЗСМК»',
             'region': 42,
-            'dop_info': ''.join(self.find_lot_row(info_block, 'Дополнительная информация:')),
-            'tender_poccess_start': self.find_lot_row(info_block, 'Дата начала работ:')[0],
-            'tender_proccess_end': self.find_lot_row(info_block, 'Дата окончания работ:')[0],
+            'dop_info': self.get_tender_dop_info(info_block, 'dop'),
+            'tender_process_start': self.get_first(self.find_lot_row(info_block, 'Дата начала работ:')),
+            'tender_process_end': self.get_first(self.find_lot_row(info_block, 'Дата окончания работ:')),
             'tech_part_date': self.get_tech_part_date(info_block),
             'commercial_part_date': self.get_commercial_part_date(info_block),
-            'odrder_submission': self.get_order_submission(info_block),
-
-            'sub_close_date': self.clear_date_str(
-                self.find_lot_row(lot_div,
-                                  'Этапы закупочной процедуры', 'Дата и время окончания срока приема заявок'),
-            ),
-            'price': self.clear_double_data_str(
-                'odrder_submission'
-            self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Начальная цена')
-        ),
-        'guarantee_app': self.clear_double_data_str(
-            self.find_lot_row(
-                lot_div, 'Цена договора и требования к обеспечению', 'Размер обеспечения заявки (в рублях)'
-            )
-        ),
-        'payment_terms': self.find_lot_row(
-            lot_div, 'Условия договора', 'Условия оплаты и поставки товаров/выполнения работ/оказания услуг'),
-        'quantity': self.find_lot_row(
-            lot_div, 'Условия договора',
-            'Количество поставляемого товара/объем выполняемых работ/оказываемых услуг'
-        ),
-        'delivery_place': self.get_lot_delivery_place(lot_div),
-        'order_view_date': self.clear_date_str(
-            self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время вскрытия заявок')),
-        'scoring_date': self.clear_date_str(
-            self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата подведения итогов')
-        ),
-        'scoring_datetime': self.clear_date_str(
-            self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Подведение итогов не позднее')
-        ),
-        'publication_date': self.clear_date_str(
-            ''.join(
-                data_html.find(
-                    'div', class_='block__docs_container').find('p', class_='datePublished').findAll(text=True)
-            )
-        ),
-        'trade_date': self.clear_date_str(
-            self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время проведения')
-        ),
-        'currency': currency,
-        'positions': self.get_lot_positions(lot_div),
-        'okpd2': self.get_lot_okpd_okved(lot_div, okpd2=True),
+            'sending_order': self.get_tender_dop_info(info_block, 'order'),
+            'contacts': self.get_fio_phone_email(info_block),
+            'publication_date': self.get_first(self.find_lot_row(info_block, 'Дата публикации:')),
+            'link': url,
+            'attachments': self.get_tender_attachments(info_block)
         }
-        return lots
-
-    @staticmethod
-    def clear_org_name(full_text, drop_text):
-        return full_text.replace(drop_text, '').strip()
-
-    def get_org_data(self, data_html):
-        org_data_list = data_html.find(
-            'div', class_='block__docs_container organizationInfo'
-        ).find_all('div', class_='block__docs_container_cell')
-
-        org = {
-            'name': self.clear_org_name(
-                org_data_list[0].find('h3').text, org_data_list[0].find('h3').find('a').text
-            ),
-            'address': org_data_list[2].find_all('p')[1].text,
-            'fio': org_data_list[6].find_all('p')[1].text,
-            'phone': org_data_list[3].find_all('p')[1].text,
-            'fax': org_data_list[4].find_all('p')[1].text,
-            'email': org_data_list[5].find_all('p')[1].text,
-            'place': org_data_list[7].find_all('p')[1].text,
-            'region': self.get_region_from_address(org_data_list[2].find_all('p')[1].text, )
-        }
-        return org
-
-    def get_attachments(self, data_html):
-        """
-        Получение прикрепленных файлов
-        """
-        attachments = []
-        attachments_div = data_html.find('div', class_='block__docs_container block__docs_container_download')
-        files = attachments_div.find_all('div', class_='block__docs_container_cell')
-        if len(files) == 1 and files[0].find('p').text == 'Нет прикрепленных документов':
-            return attachments
-        for file in files:
-            attachments.append({
-                'display_name': file.find('a').text,
-                'url': file.find('a').attrs['href'],
-                'real_name': file.find('a').text,
-                'publication_date': file.find('time').text,
-            })
-        return attachments
+        return lot

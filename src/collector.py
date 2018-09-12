@@ -69,7 +69,8 @@ class Collector:
         """
         # Получение HTML страницы с данными тендера
         tender_data_html = self.http.get_tender_data(item)
-        tender_lots = self.parser.get_tender_lots_data(tender_data_html)
+        tender_lot = self.parser.get_tender_lots_data(tender_data_html, item)
+        print(tender_lot)
         """
         multilot = True if len(tender_lots) > 1 else False
         org = self.parser.get_org_data(tender_data_html)
