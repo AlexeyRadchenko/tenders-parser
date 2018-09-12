@@ -8,6 +8,12 @@ class Mapper:
     """
     Класс-маппер (перевод из обработанных данных в модель для отправки в менеджер очередей RabbitMQ)
     """
+    currency = {
+        'Российский рубль': 'RUB',
+        'Доллар США (USD)': 'USD',
+        'Евро (EUR)': 'EUR'
+    }
+
     def __init__(self):
         self.tools = Tools()
 
@@ -21,18 +27,14 @@ class Mapper:
 
     @staticmethod
     def get_global_search(item):
-        return '{} {} {}'.format(
+        return '{} {}'.format(
             item['name'] if item['name'] else '',
-            item['customer'],
             item['type'] if item['type'] else ''
         )
 
     @staticmethod
     def get_tender_search(item):
-        return '{} {}'.format(
-            item['name'],
-            item['customer']
-        )
+        return item['name']
 
     def map(self, item):
         """
@@ -54,12 +56,12 @@ class Mapper:
             'attachments': None,
             'globalSearch': self.get_global_search(item),
             'guaranteeApp': None,
-            'href': None,
+            'href': 'https://www.uralmash.ru/tenders/',
             'json': None,
             # Максимальная (начальная) цена тендера
             'maxPrice': None,
             'multilot': False,
-            'number': None,
+            'number': item['id'].replace('_1', ''),
             # Массив ОКПД (если присутствует) ex. ['11.11', '20.2']
             'okdp': [],
             # Массив ОКПД2 (если присутствует)
@@ -99,8 +101,8 @@ class Mapper:
                 'reason': None,
             },
             'futureNumber': None,
-            'scoringDateTime': None,
-            'biddingDateTime': item['bidding_date'],
+            'scoringDateTime': item['scoring_date'],
+            'biddingDateTime': None,
             }
 
         model['json'] = self.get_json(model, item)
@@ -153,7 +155,7 @@ class Mapper:
         elif org_form in ['Конкурс']:
             return 1
         else:
-            return 5000
+            return 0
 
     @staticmethod
     def get_status(string):
@@ -218,31 +220,6 @@ class Mapper:
                     guarantee_contract=None,
                     customer_guid='58c7e4a60640fd10b742b69e',
                     customer_name=model['customers'][0]['name'],
-                    currency=item['currency']
-                )
-            ).add_category(
-                lambda c: c.set_properties(
-                    name='ObjectInfo',
-                    displayName='Информация об объекте закупки',
-                ).add_table(
-                    lambda t: t.set_properties(
-                        name='Objects',
-                        displayName='Объекты закупки'
-                    ).set_header(
-                        lambda th: th.add_cells([
-                            Head(name='Name', displayName='Наименование')
-                        ])
-                    ).add_rows(
-                        [item['name']],
-                        lambda el, row: row.add_cells([
-                            Cell(
-                                name='Name',
-                                type=FieldType.String,
-                                value=el,
-                                modifications=[]
-                            )
-                        ])
-                    )
                 )
             ).add_category(
                 lambda c: c.set_properties(
@@ -252,7 +229,7 @@ class Mapper:
                 ).add_field(
                     Field(
                         name='PublicationtDateTime',
-                        displayName='Дата размещения процедуры',
+                        displayName='Дата и время начала подачи заявок',
                         value=model['publicationDateTime'],
                         type=FieldType.DateTime,
                         modifications=[Modification.Calendar]
@@ -260,7 +237,7 @@ class Mapper:
                 ).add_field(
                     Field(
                         name='AcceptOrderEndDateTime',
-                        displayName='Срок приёма заявок',
+                        displayName='Дата и время окончания приема заявок',
                         value=model['submissionCloseDateTime'],
                         type=FieldType.DateTime,
                         modifications=[Modification.Calendar]
@@ -268,7 +245,7 @@ class Mapper:
                 ).add_field(
                     Field(
                         name='BiddingEndDateTime',
-                        displayName='Дата подведения итогов',
+                        displayName='Дата и время подведения итогов',
                         value=model['biddingDateTime'],
                         type=FieldType.DateTime,
                         modifications=[]
@@ -283,6 +260,13 @@ class Mapper:
                     name='Organization',
                     displayName='Организация',
                     value=item['customer'],
+                    type=FieldType.String,
+                    modifications=[]
+                    )
+                ).add_field(Field(
+                    name='CustomerPlace',
+                    displayName='Адрес местонахождения',
+                    value='620012, г. Екатеринбург, пл. Первой пятилетки',
                     type=FieldType.String,
                     modifications=[]
                     )
@@ -312,13 +296,13 @@ class Mapper:
                         type=FieldType.String,
                         modifications=[Modification.Email]
                         )
-                    ).add_field(Field(
-                        name='CustomerPlace',
-                        displayName='Адрес местонахождения',
-                        value='620012, г. Екатеринбург, пл. Первой пятилетки',
-                        type=FieldType.String,
-                        modifications=[]
-                        )
                     )
                 )
-            ).to_json()
+            ).add_general(Field(
+                name='Currency',
+                displayName='Валюта',
+                value=self.currency.get(item['currency']),
+                type=FieldType.String,
+                modifications=[self.get_currency_mod(item)]
+                )
+        ).to_json()

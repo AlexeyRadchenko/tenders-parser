@@ -63,7 +63,7 @@ class Parser:
         name_str = data_html.find('h4').text
         pub_date = data_html.find('p', {'class': 'date'}).find('strong').text
         hashing_str = (pub_date + name_str).encode('utf-8')
-        return 'УМ{}'.format(int(sha256(hashing_str).hexdigest(), 16) % 10 ** 8)
+        return 'УМ{}_1'.format(int(sha256(hashing_str).hexdigest(), 16) % 10 ** 8)
 
     def get_tender_status(self, sub_start_date, sub_close_date, scoring_date):
         sub_start_datetime_utc = self.tools.get_utc_epoch(sub_start_date)
@@ -95,7 +95,7 @@ class Parser:
                     'customer': 'ПАО Уралмашзавод',
                     'sub_start_date': self.tools.get_utc_epoch(sub_start_close_date[0]),
                     'sub_close_date': self.tools.get_utc_epoch(sub_start_close_date[1]),
-                    'bidding_date': self.tools.get_utc_epoch(
+                    'scoring_date': self.tools.get_utc_epoch(
                         self.clear_date_str(item_data_map.get('Дата подведения итогов'))[0]
                     ),
                     'type': item_data_map.get('Способ'),
