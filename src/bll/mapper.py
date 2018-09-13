@@ -12,46 +12,43 @@ class Mapper:
         self.tools = Tools()
 
     @staticmethod
-    def get_organisations_search(lot, org):
-        """на roseltorg.ru кпп не указано"""
-        return lot['customer'] if lot['customer'] else ''
+    def get_organisations_search(item):
+        return item['customer']
 
     @staticmethod
     def get_customer_model_list(customer):
         return [{
             'guid': None,
-            'name': lot['customer'] if lot['customer'] else org['name'],
-            'region': int(org['region']) if org['region'] else None
+            'name': customer,
+            'region': 42,
+            'inn': 4218000951,
+            'kpp': 421801001,
         }]
 
     @staticmethod
-    def get_global_search(item, lot):
-        return '{} {} {} {}'.format(
+    def get_global_search(item):
+        return '{} {} {}'.format(
             item['number'],
             item['name'] if item['name'] else '',
-            lot['customer'] if lot['customer'] else '',
-            item['type'] if item['type'] else ''
+            item['customer'] if item['customer'] else '',
         )
 
     @staticmethod
-    def get_tender_search(item, lot):
+    def get_tender_search(item):
         return '{} {} {}'.format(
             item['number'] if item['number'] else '',
-            item['name'] if item['name'] else lot['name'],
-            lot['customer'] if lot['customer'] else ''
+            item['name'] if item['name'] else '',
+            item['customer'] if item['customer'] else ''
         )
 
-    def get_attachments(self, files):
-        attachments = []
-        for file in files:
-            attachments.append({
-                'displayName': file['display_name'],
-                'href': file['url'],
-                'publicationDateTime': self.tools.get_utc_epoch(
-                    file['publication_date'][0], file['publication_date'][1]),
-                'realName': file['real_name'],
-                'size': None
-            })
+    def get_attachments(self, item):
+        attachments = {
+            'displayName': item['attachments'][0],
+            'href': item['attachments'][2],
+            'publicationDateTime': self.tools.get_utc_epoch(item['publication_date']),
+            'realName': item['attachments'][1],
+            'size': None
+        }
         return attachments
 
     def map(self, item):
@@ -71,60 +68,58 @@ class Mapper:
             # }]
             'customers': self.get_customer_model_list(item['customer']),
             # массив документов
-            'attachments': self.get_attachments(attachments),
-            'globalSearch': self.get_global_search(item, lot),
-            'guaranteeApp': lot['guarantee_app'],
+            'attachments': self.get_attachments(item) if item.get('attachments') else None,
+            'globalSearch': self.get_global_search(item),
+            'guaranteeApp': None,
             'href': item['link'],
             'json': None,
             # Максимальная (начальная) цена тендера
-            'maxPrice': lot['price'],
-            'multilot': multilot,
+            'maxPrice': None,
+            'multilot': False,
             'number': item['number'],
             # Массив ОКПД (если присутствует) ex. ['11.11', '20.2']
             'okdp': [],
             # Массив ОКПД2 (если присутствует)
             'okpd': [],
             # Массив ОКДП (если присутствует)
-            'okpd2': [i.split()[0] for i in lot['okpd2']] if lot['okpd2'] else [],
+            'okpd2': [],
             'orderName': item['name'],
-            'organisationsSearch': self.get_organisations_search(lot, org),
-            'placingWay': self.get_placingway(item['type']),
+            'organisationsSearch': self.get_organisations_search(item),
+            'placingWay': 0,
             'platform': {
-                'href': 'https://etpgpb.ru/',
-                'name': 'ЭТП ГПБ',
+                'href': 'http://supply.evraz.com',
+                'name': 'АО «ЕВРАЗ ЗСМК»',
             },
             # Дата публикации тендера UNIX EPOCH (UTC)
-            'publicationDateTime': self.tools.get_utc_epoch(lot['publication_date'][0], lot['publication_date'][1]),
-            'region': int(org['region']) if org['region'] else None,
+            'publicationDateTime': self.tools.get_utc_epoch(item['publication_date']),
+            'region': 42,
             # Дата окончания подачи заявок UNIX EPOCH (UTC)
             'submissionCloseDateTime': self.tools.get_utc_epoch(
-                lot['sub_close_date'][0], lot['sub_close_date'][1]) if lot['sub_close_date'] else None,
+                item['tech_part_date']) if item['tech_part_date'] else None,
             # Дата начала подачи заявок UNIX EPOCH (UTC)
-            'submissionStartDateTime': self.tools.get_utc_epoch(lot['publication_date'][0], lot['publication_date'][1]),
-            'tenderSearch': self.get_tender_search(item, lot),
+            'submissionStartDateTime': self.tools.get_utc_epoch(item['publication_date']),
+            'tenderSearch': self.get_tender_search(item),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
-            'status': self.get_status(lot['status']),
+            'status': item['status'],
             # Версия извещения
             # Если на площадке нет версии, то ставить 1
             'version': 1,
             'kind': 0,
-            'type': 18,
-            'ktru': ["string"],
-            "modification": {
-                'modDateTime': '',
+            'type': 30,
+            'ktru': [],
+            'modification': {
+                'modDateTime': None,
                 'reason': ''
             },
-            'futureNumber': 'string',
-            'scoringDateTime': 'long',
-            'biddingDateTime': 'long',
+            'futureNumber': None,
+            'scoringDateTime': self.tools.get_utc_epoch(item['commercial_part_date']),
+            'biddingDateTime': None,
+            'prepayment': None,
+            'preference': None,
         }
 
-        model['json'] = self.get_json(
-            model,
-            lot,
-            org
-        )
+        model['json'] = self.get_json(model, item)
         return model
 
     def get_placingway(self, org_form):
@@ -169,7 +164,7 @@ class Mapper:
         elif org_form in ['Открытая тендерная закупка в электронной форме']:
             return 16
         else:
-            return 5000
+            return 0
 
     @staticmethod
     def get_status(string):
@@ -214,7 +209,7 @@ class Mapper:
         elif lot_currency == 'EUR':
             return Modification.CurEUR
 
-    def get_json(self, model, lot, org):
+    def get_json(self, model, item):
         """
         Получение модели для рендера
         Использует sharedmodel модуль
@@ -230,42 +225,12 @@ class Mapper:
         return Root()\
             .add_customer(
                 Customer().set_properties(
-                    max_price=model['maxPrice'],
-                    guarantee_app=model['guaranteeApp'],
+                    max_price=None,
+                    guarantee_app=None,
                     guarantee_contract=None,
                     customer_guid=model['customers'][0]['guid'],
-                    customer_name=model['customers'][0]['name']
-                )
-            ).add_category(
-                lambda c: c.set_properties(
-                    name='ObjectInfo',
-                    displayName='Информация об объекте закупки',
-                ).add_table(
-                    lambda t: t.set_properties(
-                        name='Objects',
-                        displayName='Объекты закупки'
-                    ).set_header(
-                        lambda th: th.add_cells([
-                            Head(name='Name', displayName='Наименования товара, работы, услуги'),
-                            Head(name='Count', displayName='Количество')
-                        ])
-                    ).add_rows(
-                        [element for element in enumerate(lot['positions'], start=1)],
-                        lambda el, row: row.add_cells([
-                            Cell(
-                                name='Name',
-                                type=FieldType.String,
-                                value=el[1].get('name').strip('"'),
-                                modifications=[]
-                            ),
-                            Cell(
-                                name='Count',
-                                type=FieldType.String,
-                                value=el[1].get('quantity'),
-                                modifications=[]
-                            )
-                        ])
-                    )
+                    customer_name=model['customers'][0]['name'],
+                    currency=None,
                 )
             ).add_category(
                 lambda c: c.set_properties(
@@ -277,42 +242,39 @@ class Mapper:
                         name='PublicationtDateTime',
                         displayName='Дата публикации',
                         value=model['publicationDateTime'],
-                        type=FieldType.DateTime,
+                        type=FieldType.Date,
+                        modifications=[Modification.Calendar]
+                    )
+                ).add_field(
+                    Field(
+                        name='AcceptOrderStartDateTime',
+                        displayName='Дата начала приема заявок',
+                        value=model['publicationDateTime'],
+                        type=FieldType.Date,
                         modifications=[Modification.Calendar]
                     )
                 ).add_field(
                     Field(
                         name='AcceptOrderEndDateTime',
-                        displayName='Дата и время окончания срока приема заявок',
+                        displayName='Дата окончания приема заявок',
                         value=model['submissionCloseDateTime'],
                         type=FieldType.DateTime,
-                        modifications=[Modification.Calendar]
-                    )
-                ).add_field(
-                    Field(
-                        name='ScoringStartDateTime',
-                        displayName='Дата и время вскрытия заявок',
-                        value=self.tools.get_utc_epoch(
-                            lot['order_view_date'][0], lot['order_view_date'][1]) if lot['order_view_date'] else None,
-                        type=FieldType.DateTime,
                         modifications=[]
                     )
-                ).add_field(        #
+                ).add_field(
                     Field(
                         name='ScoringEndDateTime',
-                        displayName='Дата подведения итогов',
-                        value=self.tools.get_utc_epoch(
-                            lot['scoring_date'][0], lot['scoring_date'][1]) if lot['scoring_date'] else None,
+                        displayName='Дата и время вскрытия конвертов',
+                        value=model['scoringDateTime'],
                         type=FieldType.DateTime,
                         modifications=[]
                     )
                 ).add_field(
                     Field(
-                        name='TradeDateTime',
-                        displayName='Дата проведения торгов',
-                        value=self.tools.get_utc_epoch(
-                            lot['trade_date'][0], lot['trade_date'][1]) if lot['trade_date'] else None,
-                        type=FieldType.Date,
+                        name='Info',
+                        displayName='Порядок подачи заявок',
+                        value=item['sending_order'],
+                        type=FieldType.String,
                         modifications=[]
                     )
                 )
@@ -324,21 +286,14 @@ class Mapper:
                 ).add_field(Field(
                     name='Organization',
                     displayName='Организация',
-                    value=org['name'],
-                    type=FieldType.String,
-                    modifications=[]
-                    )
-                ).add_field(Field(
-                    name='ActualAddress',
-                    displayName='Фактический адрес',
-                    value=org['actual_address'],
+                    value=item['customer'],
                     type=FieldType.String,
                     modifications=[]
                     )
                 ).add_field(Field(
                     name='PostAddress',
                     displayName='Почтовый адрес',
-                    value=org['post_address'],
+                    value='654043, Россия, Кемеровская обл., г. Новокузнецк, ш. Космическое 16',
                     type=FieldType.String,
                     modifications=[]
                     )
@@ -350,21 +305,21 @@ class Mapper:
                     ).add_field(Field(
                         name='FIO',
                         displayName='ФИО',
-                        value=org['fio'],
+                        value=item['contacts'][0] if item.get('contacts') else '',
                         type=FieldType.String,
                         modifications=[Modification.HiddenLabel]
                         )
                     ).add_field(Field(
                         name='Phone',
                         displayName='Телефон',
-                        value=org['phone'],
+                        value=item['contacts'][1] if item.get('contacts') else '',
                         type=FieldType.String,
                         modifications=[]
                         )
                     ).add_field(Field(
                         name='Email',
                         displayName='Электронная почта',
-                        value=org['email'],
+                        value=item['contacts'][2] if item.get('contacts') else '',
                         type=FieldType.String,
                         modifications=[Modification.Email]
                         )
@@ -372,25 +327,9 @@ class Mapper:
                 )
             ).add_general(
                 lambda f: f.set_properties(
-                    name='Quantity',
-                    displayName='Количество поставляемого товара/объем выполняемых работ/оказываемых услуг',
-                    value=lot['quantity'],
-                    type=FieldType.String,
-                    modifications=[]
-                )
-            ).add_general(
-                lambda f: f.set_properties(
-                    name='deliveryPlace',
-                    displayName='Место поставки товаров оказания услуг',
-                    value=lot['delivery_place'] if lot['delivery_place'] else '',
-                    type=FieldType.String,
-                    modifications=[]
-                )
-            ).add_general(
-                lambda f: f.set_properties(
-                    name='PaymentTerms',
-                    displayName='Условия оплаты и поставки товаров/выполнения работ/оказания услуг',
-                    value=lot['payment_terms'] if lot['payment_terms'] else '',
+                    name='Info',
+                    displayName='Дополнительная информация',
+                    value=item['dop_info'],
                     type=FieldType.String,
                     modifications=[]
                 )

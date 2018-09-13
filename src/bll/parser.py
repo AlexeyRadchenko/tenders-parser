@@ -47,9 +47,11 @@ class Parser:
 
     def get_tender_status(self, info_block):
         tech_part_date = self.get_tech_part_date(info_block)
-        clear_tech_date = self.tools.get_utc_epoch(tech_part_date)
+        commercial_date = self.get_commercial_part_date(info_block)
+        utc_tech_date = self.tools.get_utc_epoch(tech_part_date)
+        utc_commercial_date = self.tools.get_utc_epoch(commercial_date)
         current_date = self.tools.get_utc()
-        if clear_tech_date > current_date:
+        if utc_tech_date > current_date or utc_commercial_date > current_date:
             return 1
         else:
             return 3
@@ -101,7 +103,7 @@ class Parser:
         #print(self.find_lot_row(info_block, 'Дополнительная информация:'))
         #print(self.get_tender_dop_info(info_block))
         lot = {
-            'id': self.get_tender_id_from_url(url),
+            'id': self.get_tender_id_from_url(url) + '_1',
             'number': self.get_tender_number(data_html.find('li', class_='active').text),
             'name': data_html.find('div', class_='info-lot').find('p').text,
             'status': self.get_tender_status(info_block),
