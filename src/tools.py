@@ -70,7 +70,7 @@ class Tools:
                                      '%d.%m.%Y %H:%M:%S') - timedelta(hours=time_delta)
         else:
             date = datetime.strptime(date_string.replace('\n','').replace('\t','').replace('\r',''),
-                                     '%d.%m.%Y') - timedelta(hours=time_delta)
+                                     '%d.%m.%Y')
 
         epoch_time = (date - datetime(1970, 1, 1)).total_seconds() * 1000
         return int(epoch_time)

@@ -39,6 +39,14 @@ class Category(object):
         self.entities.append(arg)
         return self
 
+    def add_contacts_array(self, arr, arg):
+        if not arr:
+            return self
+
+        for i, item in enumerate(arr, start=1):
+            self.add_array(arg(i, item, Category(type='Array')))
+        return self
+
     def compare(self, other, other_date, self_date):
         for entity in self.entities:
             other_entity = next(

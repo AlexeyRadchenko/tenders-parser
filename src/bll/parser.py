@@ -33,21 +33,21 @@ class Parser:
                 return row_values[1:]
         return None
 
-    def get_tech_part_date(self, info_block):
+    def get_tech_part_date_for_status(self, info_block):
         tech_part_date = self.find_lot_row(info_block, 'Дата продления Технической части:')
         if not tech_part_date:
             tech_part_date = self.find_lot_row(info_block, 'Дата принятия Технической части:')
         return self.get_first(tech_part_date)
 
-    def get_commercial_part_date(self, info_block):
+    def get_commercial_part_date_for_status(self, info_block):
         commercial_part_date = self.find_lot_row(info_block, 'Дата продления Коммерческой части:')
         if not commercial_part_date:
             commercial_part_date = self.find_lot_row(info_block, 'Дата принятия Коммерческой части:')
         return self.get_first(commercial_part_date)
 
     def get_tender_status(self, info_block):
-        tech_part_date = self.get_tech_part_date(info_block)
-        commercial_date = self.get_commercial_part_date(info_block)
+        tech_part_date = self.get_tech_part_date_for_status(info_block)
+        commercial_date = self.get_commercial_part_date_for_status(info_block)
         utc_tech_date = self.tools.get_utc_epoch(tech_part_date)
         utc_commercial_date = self.tools.get_utc_epoch(commercial_date)
         current_date = self.tools.get_utc()
@@ -67,13 +67,26 @@ class Parser:
                 elif search_info == 'order':
                     return ''.join(info_list[:i]).replace('\n', '').replace('\xa0', '')
 
-    def get_fio_phone_email(self, info_block):
-        info_list = self.find_lot_row(info_block, 'Специалист ЦВП:')
-        phone = re.findall(r'\(\d+\)\s\d\d-\d\d-\d\d', info_list[1])
-        if not phone:
-            phone = re.findall(r'\d\d-\d\d-\d\d', info_list[1])
-        phone = ' '.join(phone) if phone else None
-        return info_list[0], phone, info_list[2]
+    def get_fio_phone_email(self, info_list):
+        contacts_list = []
+        name_lst = re.findall(r'[А-Я][а-я]+\s[А-Я][а-я]+\s[А-Я][а-я]+', info_list[0])
+        phone_lst = re.findall(r'\d\d-\d\d-\d\d', info_list[1])
+        email_lst = re.findall(r'[^@,]+@evraz.com', info_list[2])
+        for i, name in enumerate(name_lst):
+            contacts_list.append(
+                (name, '(3843) ' + phone_lst[i] if phone_lst else None, email_lst[i] if email_lst else None)
+            )
+        return contacts_list
+
+    def get_contacts(self, info_block):
+        contacts = []
+        info_list_cvp = self.find_lot_row(info_block, 'Специалист ЦВП:')
+        info_list_tender_init = self.find_lot_row(info_block, 'Инициатор:')
+        if info_list_cvp:
+            contacts.extend(self.get_fio_phone_email(info_list_cvp))
+        if info_list_tender_init:
+            contacts.extend(self.get_fio_phone_email(info_list_tender_init))
+        return contacts
 
     def get_tender_number(self, text):
         number = re.search(r'Лот[^.]+', text)
@@ -83,8 +96,10 @@ class Parser:
     def get_tender_attachments(self, info_block):
         doc_url = self.find_lot_row(info_block, 'Техническая документация к лоту:')
         if doc_url:
-            display_name = doc_url.find('a').text
-            name = re.search(r'[^/]+$', doc_url.find('a').attrs['href'])
+            display_name = re.search(r'^[^.]+', doc_url.find('a').text)
+            if display_name:
+                display_name = display_name.group(0)
+            name = re.search(r'[^/.]+$', doc_url.find('a').attrs['href'])
             if name:
                 name = name.group(0)
             url = self.base_url + doc_url.find('a').attrs['href']
@@ -100,8 +115,6 @@ class Parser:
 
     def get_tender_lots_data(self, data_html, url):
         info_block = data_html.find_all('div', class_='text-block')[-1]
-        #print(self.find_lot_row(info_block, 'Дополнительная информация:'))
-        #print(self.get_tender_dop_info(info_block))
         lot = {
             'id': self.get_tender_id_from_url(url) + '_1',
             'number': self.get_tender_number(data_html.find('li', class_='active').text),
@@ -112,10 +125,14 @@ class Parser:
             'dop_info': self.get_tender_dop_info(info_block, 'dop'),
             'tender_process_start': self.get_first(self.find_lot_row(info_block, 'Дата начала работ:')),
             'tender_process_end': self.get_first(self.find_lot_row(info_block, 'Дата окончания работ:')),
-            'tech_part_date': self.get_tech_part_date(info_block),
-            'commercial_part_date': self.get_commercial_part_date(info_block),
+            'tech_part_date': self.get_first(self.find_lot_row(info_block, 'Дата принятия Технической части:')),
+            'extend_tech_part_date': self.get_first(self.find_lot_row(info_block, 'Дата продления Технической части:')),
+            'commercial_part_date': self.get_first(self.find_lot_row(info_block, 'Дата принятия Коммерческой части:')),
+            'extend_commercial_part_date': self.get_first(
+                self.find_lot_row(info_block, 'Дата продления Коммерческой части:')
+            ),
             'sending_order': self.get_tender_dop_info(info_block, 'order'),
-            'contacts': self.get_fio_phone_email(info_block),
+            'contacts': self.get_contacts(info_block),
             'publication_date': self.get_first(self.find_lot_row(info_block, 'Дата публикации:')),
             'link': url,
             'attachments': self.get_tender_attachments(info_block)

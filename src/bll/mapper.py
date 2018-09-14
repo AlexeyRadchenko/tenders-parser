@@ -13,7 +13,12 @@ class Mapper:
 
     @staticmethod
     def get_organisations_search(item):
-        return item['customer']
+        return '{} {} {} {}'.format(
+            '4218000951',
+            '421801001',
+            item['customer'],
+            '42'
+        )
 
     @staticmethod
     def get_customer_model_list(customer):
@@ -21,24 +26,20 @@ class Mapper:
             'guid': None,
             'name': customer,
             'region': 42,
-            'inn': 4218000951,
-            'kpp': 421801001,
         }]
 
     @staticmethod
     def get_global_search(item):
-        return '{} {} {}'.format(
+        return '{} {}'.format(
             item['number'],
             item['name'] if item['name'] else '',
-            item['customer'] if item['customer'] else '',
         )
 
     @staticmethod
     def get_tender_search(item):
-        return '{} {} {}'.format(
+        return '{} {}'.format(
             item['number'] if item['number'] else '',
             item['name'] if item['name'] else '',
-            item['customer'] if item['customer'] else ''
         )
 
     def get_attachments(self, item):
@@ -110,10 +111,10 @@ class Mapper:
             'ktru': [],
             'modification': {
                 'modDateTime': None,
-                'reason': ''
+                'reason': None
             },
             'futureNumber': None,
-            'scoringDateTime': self.tools.get_utc_epoch(item['commercial_part_date']),
+            'scoringDateTime': None,
             'biddingDateTime': None,
             'prepayment': None,
             'preference': None,
@@ -247,35 +248,56 @@ class Mapper:
                     )
                 ).add_field(
                     Field(
-                        name='AcceptOrderStartDateTime',
-                        displayName='Дата начала приема заявок',
-                        value=model['publicationDateTime'],
+                        name='AcceptTechPartDateTime',
+                        displayName='Дата принятия Технической части',
+                        value=self.tools.get_utc_epoch(item['tech_part_date']) if item.get('tech_part_date') else None,
+                        type=FieldType.DateTime,
+                        modifications=[]
+                    )
+                ).add_field(
+                    Field(
+                        name='ExtendTechPartDateTime',
+                        displayName='Дата продления Технической части',
+                        value=self.tools.get_utc_epoch(
+                            item['extend_tech_part_date']) if item.get('extend_tech_part_date') else None,
+                        type=FieldType.DateTime,
+                        modifications=[]
+                    )
+                ).add_field(
+                    Field(
+                        name='AcceptCommercialPartDateTime',
+                        displayName='Дата принятия Коммерческой части',
+                        value=self.tools.get_utc_epoch(
+                            item['commercial_part_date']) if item.get('commercial_part_date') else None,
+                        type=FieldType.DateTime,
+                        modifications=[]
+                    )
+                ).add_field(
+                    Field(
+                        name='ExtendCommercialPartDateTime',
+                        displayName='Дата продления Коммерческой части',
+                        value=self.tools.get_utc_epoch(
+                            item['extend_commercial_part_date']) if item.get('extend_commercial_part_date') else None,
+                        type=FieldType.DateTime,
+                        modifications=[]
+                    )
+                ).add_field(
+                    Field(
+                        name='StartWorkDateTime',
+                        displayName='Дата начала работ',
+                        value=self.tools.get_utc_epoch(
+                            item['tender_process_start']) if item.get('tender_process_start') else None,
                         type=FieldType.Date,
                         modifications=[Modification.Calendar]
                     )
                 ).add_field(
                     Field(
-                        name='AcceptOrderEndDateTime',
-                        displayName='Дата окончания приема заявок',
-                        value=model['submissionCloseDateTime'],
-                        type=FieldType.DateTime,
-                        modifications=[]
-                    )
-                ).add_field(
-                    Field(
-                        name='ScoringEndDateTime',
-                        displayName='Дата и время вскрытия конвертов',
-                        value=model['scoringDateTime'],
-                        type=FieldType.DateTime,
-                        modifications=[]
-                    )
-                ).add_field(
-                    Field(
-                        name='Info',
-                        displayName='Порядок подачи заявок',
-                        value=item['sending_order'],
-                        type=FieldType.String,
-                        modifications=[]
+                        name='EndWorkDateTime',
+                        displayName='Дата окончания работ',
+                        value=self.tools.get_utc_epoch(
+                            item['tender_process_end']) if item.get('tender_process_end') else None,
+                        type=FieldType.Date,
+                        modifications=[Modification.Calendar]
                     )
                 )
             ).add_category(
@@ -297,29 +319,30 @@ class Mapper:
                     type=FieldType.String,
                     modifications=[]
                     )
-                ).add_array(
-                    lambda ar: ar.set_properties(
-                        name='Contacts',
-                        displayName='Контакты',
+                ).add_contacts_array(
+                    item['contacts'],
+                    lambda i, el, obj: obj.set_properties(
+                        name='Contacts' + str(i),
+                        displayName='Контакт ' + str(i),
                         modifications=[Modification.HiddenLabel]
                     ).add_field(Field(
                         name='FIO',
                         displayName='ФИО',
-                        value=item['contacts'][0] if item.get('contacts') else '',
+                        value=el[0],
                         type=FieldType.String,
                         modifications=[Modification.HiddenLabel]
                         )
                     ).add_field(Field(
                         name='Phone',
                         displayName='Телефон',
-                        value=item['contacts'][1] if item.get('contacts') else '',
+                        value=el[1],
                         type=FieldType.String,
                         modifications=[]
                         )
                     ).add_field(Field(
                         name='Email',
                         displayName='Электронная почта',
-                        value=item['contacts'][2] if item.get('contacts') else '',
+                        value=el[2],
                         type=FieldType.String,
                         modifications=[Modification.Email]
                         )
@@ -329,7 +352,7 @@ class Mapper:
                 lambda f: f.set_properties(
                     name='Info',
                     displayName='Дополнительная информация',
-                    value=item['dop_info'],
+                    value='{} {}'.format(item['sending_order'], item['dop_info']),
                     type=FieldType.String,
                     modifications=[]
                 )
