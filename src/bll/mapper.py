@@ -13,11 +13,10 @@ class Mapper:
 
     @staticmethod
     def get_organisations_search(item):
-        return '{} {} {} {}'.format(
+        return '{} {} {}'.format(
             '4218000951',
             '421801001',
-            item['customer'],
-            '42'
+            item['customer']
         )
 
     @staticmethod
@@ -181,7 +180,7 @@ class Mapper:
         #   Исполнение завершено = 6,
         #   Исполняется = 7,
         #   Приостановлено определение поставщика = 8
-        т.к. на площадке присутствуют не все виды, то 
+        т.к. на площадке присутствуют не все виды, то
         задействованы только присутствующие
 
             status[
@@ -319,33 +318,35 @@ class Mapper:
                     type=FieldType.String,
                     modifications=[]
                     )
-                ).add_contacts_array(
-                    item['contacts'],
-                    lambda i, el, obj: obj.set_properties(
-                        name='Contacts' + str(i),
-                        displayName='Контакт ' + str(i),
+                ).add_array(
+                    lambda c: c.set_properties(
+                        name='Contacts',
+                        displayName='Контакты',
                         modifications=[Modification.HiddenLabel]
-                    ).add_field(Field(
-                        name='FIO',
-                        displayName='ФИО',
-                        value=el[0],
-                        type=FieldType.String,
-                        modifications=[Modification.HiddenLabel]
-                        )
-                    ).add_field(Field(
-                        name='Phone',
-                        displayName='Телефон',
-                        value=el[1],
-                        type=FieldType.String,
-                        modifications=[]
-                        )
-                    ).add_field(Field(
-                        name='Email',
-                        displayName='Электронная почта',
-                        value=el[2],
-                        type=FieldType.String,
-                        modifications=[Modification.Email]
-                        )
+                    ).add_array_items(
+                        item['contacts'],
+                        lambda el, i: c.add_field(Field(
+                                name='FIO' + str(i),
+                                displayName='ФИО',
+                                value=el[0],
+                                type=FieldType.String,
+                                modifications=[Modification.HiddenLabel]
+                                )
+                            ).add_field(Field(
+                                name='Phone' + str(i),
+                                displayName='Телефон',
+                                value=el[1],
+                                type=FieldType.String,
+                                modifications=[]
+                                )
+                            ).add_field(Field(
+                                name='Email' + str(i),
+                                displayName='Электронная почта',
+                                value=el[2],
+                                type=FieldType.String,
+                                modifications=[Modification.Email]
+                                )
+                            )
                     )
                 )
             ).add_general(

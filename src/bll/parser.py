@@ -67,9 +67,21 @@ class Parser:
                 elif search_info == 'order':
                     return ''.join(info_list[:i]).replace('\n', '').replace('\xa0', '')
 
+    def search_fio_by_patterns(self, names_string):
+        patterns = [
+            r'[А-Я][а-я]+\s[А-Я][а-я]+\s[А-Я][а-я]+',
+            r'[А-Я][а-я]+\s[А-Я]\.?\s[А-Я]\.?',
+        ]
+        names = []
+        for pattern in patterns:
+            names.extend(
+                re.findall(pattern, names_string)
+            )
+        return names
+
     def get_fio_phone_email(self, info_list):
         contacts_list = []
-        name_lst = re.findall(r'[А-Я][а-я]+\s[А-Я][а-я]+\s[А-Я][а-я]+', info_list[0])
+        name_lst = self.search_fio_by_patterns(info_list[0])
         phone_lst = re.findall(r'\d\d-\d\d-\d\d', info_list[1])
         email_lst = re.findall(r'[^@,]+@evraz.com', info_list[2])
         for i, name in enumerate(name_lst):
@@ -99,7 +111,7 @@ class Parser:
             display_name = re.search(r'^[^.]+', doc_url.find('a').text)
             if display_name:
                 display_name = display_name.group(0)
-            name = re.search(r'[^/.]+$', doc_url.find('a').attrs['href'])
+            name = re.search(r'[^/]+$', doc_url.find('a').attrs['href'])
             if name:
                 name = name.group(0)
             url = self.base_url + doc_url.find('a').attrs['href']
