@@ -1,7 +1,7 @@
 from src.bll.retrier import retry
 from requests import get
 from bs4 import BeautifulSoup
-
+import re
 
 class Http:
     def __init__(self, proxy=None):
@@ -10,28 +10,49 @@ class Http:
         else:
             self.proxy = None
 
-    source_url = 'https://etpgpb.ru/procedures/page/{}/?procedure[category]=actual&procedure[section][0]' \
-                 '=common&procedure[section][1]=gazprom'
+    source_url_list = [
+        'https://tenders.irkutskoil.ru/tender_result.php',
+        'https://tenders.irkutskoil.ru/tenders.php',
+        'http://irkutskoil.ru/tenders/type/?archive=N',
+        'http://irkutskoil.ru/tenders/type/?archive=Y'
+    ]
+
+    def get_max_pages(self, html):
+        pagination = html.find('div', {'class': 'multip'}).find_all('a')
+        print(pagination)
+        if pagination:
+            max_pages = re.search(r'\d+', pagination[8].attrs['href'])
+            return int(max_pages.group(0))
 
     def get_tender_list(self):
         """генератор списков тендеров"""
-        page = 1
-        while True:
-            #print(page)
-            page_url = self.source_url.format(page)
-            r = get(page_url, proxies=self.proxy)
-            res = retry(r, 5, 100)
-            if res is not None and res.status_code == 200:
-                html = BeautifulSoup(res.content, 'lxml')
-                items_div = html.find('div', {'data-view': 'full'})
-                if items_div:
-                    items_data_list = items_div.find_all('a')
-                    yield items_data_list
-                    page += 1
-                else:
-                    break
-            elif res.status_code == 500:
-                break
+        for i, url in enumerate(self.source_url_list):
+            # собираем сведения об архивных тендерах в верстке после 17.07.2017
+            if i == 0:
+                params = {'cpage': 1}
+                max_pages = None
+                while True:
+                    print(params, max_pages)
+                    r = get(url, params=params, proxies=self.proxy)
+                    res = retry(r, 5, 100)
+                    if res is not None and res.status_code == 200:
+                        html = BeautifulSoup(res.content, 'lxml')
+                        if not max_pages:
+                            max_pages = self.get_max_pages(html)
+                        items_table = html.find('table', {'class': 'lot_list'})
+                        yield {
+                            'type': 'arc_after',
+                            'items': items_table
+                        }
+                        if params['cpage'] < max_pages:
+                            params['cpage'] += 1
+                        else:
+                            break
+                    elif res.status_code == 500:
+                        break
+            # собираем сведения об активных тендерах в верстке после 17.07.2017
+            elif i == 1:
+                pass
 
     def get_tender_data(self, url):
         """данные отдельного тендера"""

@@ -10,13 +10,28 @@ class Parser:
         self.tools = Tools()
         self.base_url = base_url
 
-    @staticmethod
-    def item_filter(item_data):
-        """если номера тендера содержит букву возвращаем его """
-        regex = re.compile(r'\D')
-        number = item_data.find('p', {'itemprop': 'name'}).text.split()[-1]
-        clear_number = number.strip()
-        return clear_number if regex.match(clear_number) else None
+    def get_arc_after_status(self, status_str):
+        if status_str == 'завершен':
+            return 3
+        elif status_str == 'отменен':
+            return 4
+
+    def get_arc_after_tender_list(self, html):
+        arc_data = []
+        data_rows = html.find_all('tr', {'class': 'Info'})
+        names = html.find_all('tr', {'class': 'Name'})
+        for i, row in enumerate(data_rows):
+            row_values = row.find_all('td')
+            arc_data.append({
+                'id': '{}_1'.format(row_values[0].text),
+                'number': row_values[0].text,
+                'name': names[i].find('h2').text,
+                'end_date': row_values[1].text,
+                'winner': row_values[2].text if row_values[2].text != '\xa0' else None,
+                'status': self.get_arc_after_status(row_values[3].text),
+                'data_type': 'arc_after',
+            })
+        return arc_data
 
     @staticmethod
     def clear_date_str(date_str):
