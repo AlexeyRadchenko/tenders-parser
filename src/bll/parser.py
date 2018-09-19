@@ -33,7 +33,7 @@ class Parser:
             })
         return arc_data
 
-    def get_active_after_tender_data(self, html):
+    def get_active_after_tender_data(self, html, url):
         main_section = html.find('section', {'id': 'Content'})
         table_rows_data = main_section.find('tr', {'class': 'Info'}).find_all('td')
         attachments_data = main_section.find('div', {'class': 'defc'}).find_all('li')
@@ -47,6 +47,7 @@ class Parser:
             'sub_start_date': self.clear_date_str(table_rows_data[1].text),
             'sub_close_date': self.clear_date_str(table_rows_data[2].text),
             'attachments': self.get_attachments(attachments_data, table_rows_data[1].text),
+            'link': url,
         }
         return tender_data
 

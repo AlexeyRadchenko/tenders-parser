@@ -37,14 +37,14 @@ class Http:
             params = None
             max_pages = None
             # собираем сведения об архивных тендерах в верстке ПОСЛЕ 17.07.2017, инициализация параметров влож. цикла
-            if False and i == 0:
+            if i == 0:
                 params_key = 'cpage'
                 params = {params_key: 1}
                 search_args = 'table', {'class': 'lot_list'}
                 get_max_pages_func = self.get_max_pages_after
                 search_type = 'arc_after'
             # собираем сведения об активных тендерах в верстке ПОСЛЕ 17.07.2017, т.к. одна странница делаем запрос
-            elif False and i == 1:
+            elif i == 1:
                 r = get(url, proxies=self.proxy)
                 res = retry(r, 5, 100)
                 if res is not None and res.status_code == 200:
@@ -59,14 +59,14 @@ class Http:
                 elif res.status_code == 500:
                     break
             # собираем сведения об активных тендерах в верстке ДО 17.07.2017, инициализация параметров влож. цикла
-            elif False and i == 2:
+            elif i == 2:
                 params_key = 'PAGEN_1'
                 params = {params_key: 1}
                 search_args = 'div', {'class': 'tenders'}
                 get_max_pages_func = self.get_max_pages_before
                 search_type = 'arc_before'
             # собираем сведения об активных тендерах в верстке ДО 17.07.2017
-            elif i == 3:
+            elif False and i == 3:
                 r = get(url, proxies=self.proxy)
                 res = retry(r, 5, 100)
                 if res is not None and res.status_code == 200:
@@ -79,7 +79,7 @@ class Http:
                 elif res.status_code == 500:
                     break
             # цикл перебора многостраничных данных
-            if False and (i == 0 or i == 2):
+            if i == 0 or i == 2:
                 while True:
                     print(params, max_pages)
                     r = get(url, params=params, proxies=self.proxy)
@@ -94,12 +94,11 @@ class Http:
                             'items': items_table
                         }
                         if params[params_key] < max_pages:
-                            params['cpage'] += 1
+                            params[params_key] += 1
                         else:
                             break
                     elif res.status_code == 500:
                         break
-
 
     def get_tender_data(self, url):
         """данные отдельного тендера"""

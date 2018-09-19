@@ -78,14 +78,14 @@ class Collector:
         # Получение HTML страницы с данными тендера
         if item.get('data_type') == 'link':
             tender_data_html = self.http.get_tender_data(item.get('link'))
-            item = self.parser.get_active_after_tender_data(tender_data_html)
+            item = self.parser.get_active_after_tender_data(tender_data_html, item.get('link'))
 
         #dbmodel = self.repository.get_one(item['id'])
         #if dbmodel is None or dbmodel['status'] != item['status']:
 
         if True:
             model = self.mapper.map(item)
-            #print(model)
+            print(model)
 
             short_model = {
                 '_id': model['id'],
