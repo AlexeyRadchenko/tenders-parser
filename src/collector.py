@@ -44,10 +44,10 @@ class Collector:
         for tender_data_list in tender_data_list_gen:
             if tender_data_list['type'] == 'arc_after':
                 tender_items_list = self.parser.get_arc_after_tender_list(tender_data_list['items'])
-            elif:
-
-            else:
-                tender_data_list = []
+            elif tender_data_list['type'] == 'active_after':
+                tender_items_list = tender_data_list['items']
+            elif tender_data_list['type'] == 'arc_before' or tender_data_list['type'] == 'active_before':
+                tender_items_list = self.parser.get_arc_before_tender_list(tender_data_list['items'])
             total = len(tender_items_list)
             for i, item in enumerate(tender_items_list):
                 if self.publish_date:
@@ -76,25 +76,21 @@ class Collector:
           Иначе пропускаем
         """
         # Получение HTML страницы с данными тендера
+        if item.get('data_type') == 'link':
+            tender_data_html = self.http.get_tender_data(item.get('link'))
+            item = self.parser.get_active_after_tender_data(tender_data_html)
 
         #dbmodel = self.repository.get_one(item['id'])
         #if dbmodel is None or dbmodel['status'] != item['status']:
 
         if True:
-            if not item.get('data_type'):
-                model = self.mapper.map(item)
-                #print(model)
+            model = self.mapper.map(item)
+            #print(model)
 
-                short_model = {
-                    '_id': model['id'],
-                    'status': model['status']
-                }
-            else:
-                short_model = {
-                    '_id': item['id'],
-                    'status': item['status']
-                }
-
+            short_model = {
+                '_id': model['id'],
+                'status': model['status']
+            }
             # добавляем/обновляем в MongoDB
             """
             self.repository.upsert(short_model)
