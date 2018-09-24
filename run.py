@@ -4,8 +4,8 @@ from settings import sleep_time
 
 
 if __name__ == "__main__":
-    collector = Collector(quantity=None, publish_date=None, base_url='https://etpgpb.ru')
+    collector = Collector(quantity=None, publish_date=None, base_url='http://www.uralchem.ru')
     while True:
         collector.collect()
-        #break
-        sleep(sleep_time)
+        break
+        #sleep(sleep_time)

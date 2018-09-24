@@ -48,12 +48,10 @@ class Tools:
                                      '%d.%m.%Y')
             return date
 
-    def get_utc_epoch(self, date_string, time_delta):
+    def get_utc_epoch(self, date_string, time_delta=3):
         """
         Парсинг дат и перевод их к виду UNIX EPOCH
         """
-        if not time_delta:
-            time_delta = 3
         if date_string is None or date_string.strip() == '':
             return None
         parts_date = date_string.split(' ')
@@ -69,7 +67,7 @@ class Tools:
                                          '%d.%m.%Y %H:%M:%S') - timedelta(hours=time_delta)
         elif len(parts_date) == 2:
             date = datetime.strptime(date_string.replace('\n', '').replace('\t', '').replace('\r', ''),
-                                     '%d.%m.%Y %H:%M') - timedelta(hours=time_delta)
+                                     '%d.%m.%Y %H:%M:%S') - timedelta(hours=time_delta)
         else:
             date = datetime.strptime(date_string.replace('\n','').replace('\t','').replace('\r',''),
                                      '%d.%m.%Y') - timedelta(hours=time_delta)
