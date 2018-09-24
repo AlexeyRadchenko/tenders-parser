@@ -118,6 +118,8 @@ class Mapper:
             'futureNumber': 'string',
             'scoringDateTime': 'long',
             'biddingDateTime': 'long',
+            'preference': [],
+            'group': None,
         }
 
         model['json'] = self.get_json(
