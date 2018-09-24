@@ -8,85 +8,114 @@ class Unittest(unittest.TestCase):
 
     def setUp(self):
         self.parser = Parser(base_url='')
-        self.path_tender_list = '../files/tender_list.html'
-        self.path_tender_data = '../files/tender_data.html'
+        self.path_after_active_tender_list = '../files/after_active_tender_list.html'
+        self.path_after_active_tender_data = '../files/after_active_tender_data.html'
+        self.path_after_arc_tender_list = '../files/after_arc_tender_list.html'
+        self.path_before_active_tender_list = '../files/before_active_tender_list.html'
+        self.path_before_arc_tender_list = '../files/before_arc_tender_list.html'
 
     def test_get_part_data(self):
-        with open(self.path_tender_list) as data_file:
+        with open(self.path_after_active_tender_list) as data_file:
             html = BeautifulSoup(data_file, 'lxml')
-        html_items_list = html.find(
-            'div', {'data-view': 'full'}).find_all('a')
-        self.assertEqual(15, len(html_items_list))
-        result = self.parser.get_part_data(html_items_list)
+        html_items_list = html.find('table', {'class': 'lot_list'}).find_all('a')
+        item_list = [item.attrs['href'] for item in html_items_list]
+        self.assertEqual(99, len(item_list))
+        result = item_list[10]
         #print(result)
-        self.assertEqual(6, len(result))
+        true_result = 'https://tenders.irkutskoil.ru/tender/lot_2375.php'
+        self.assertEqual(true_result, result)
+
+    def test_get_active_after_tender_data(self):
+        with open(self.path_after_active_tender_data) as data_file:
+            html = BeautifulSoup(data_file, 'lxml')
+        result = self.parser.get_active_after_tender_data(html, 'https://tenders.irkutskoil.ru/tender/lot_2383.php')
+        #print(result)
         true_result = {
-            'number': 'ГП831218',
-            'name': 'Оборудование  диспетчеризации для асд (согласно тз) ', 
-            'price': None, 
-            'sub_close_date': '02.08.20 06:00', 
-            'type': 'Попозиционные торги', 
-            'link': 'https://etpgpb.ru/procedure/tender/etp/168292-oborudovanie-dispetcherizatsii-dlya-asd-soglasno-tz/'
+            'link': 'https://tenders.irkutskoil.ru/tender/lot_2383.php',
+            'name': 'Запасные части к турбокомпрессорному оборудованию ATLAS COPCO и компрессору Quincy GDP-37LT',
+            'attachments': [{'size': None, 'url': 'https://tenders.irkutskoil.ru/tender/lotfile/lotinvite_2383.docx',
+              'publication_date': ('19.09.2018 17:42', 8), 'display_name': 'Извещение',
+              'real_name': 'lotinvite_2383'},
+             {'size': None, 'url': 'https://tenders.irkutskoil.ru/tender/lotfile/lotoffer_2383.xlsx',
+              'publication_date': ('19.09.2018 17:42', 8),
+              'display_name': 'Форма коммерческого предложения', 'real_name': 'lotoffer_2383'},
+             {'size': None, 'url': 'https://tenders.irkutskoil.ru/tender/lotfile/lot2383_doc1.pdf',
+              'publication_date': ('19.09.2018 17:42', 8),
+              'display_name': 'Инструкция. Упаковка_ маркировка материалов_ оборудования и запасных частей',
+              'real_name': 'lot2383_doc1'},
+             {'size': None, 'url': 'https://tenders.irkutskoil.ru/tender/lotfile/lot2383_doc2.xls',
+              'publication_date': ('19.09.2018 17:42', 8), 'display_name': 'форма заявки',
+              'real_name': 'lot2383_doc2'},
+             {'size': None, 'url': 'https://tenders.irkutskoil.ru/tender/lotfile/lot2383_doc3.docx',
+              'publication_date': ('19.09.2018 17:42', 8), 'display_name': 'договор ИНК',
+              'real_name': 'lot2383_doc3'},
+             {'size': None, 'url': 'https://tenders.irkutskoil.ru/tender/lotfile/lot2383_doc4.docx',
+              'publication_date': ('19.09.2018 17:42', 8), 'display_name': 'договор ООО _ИНК-СЕРВИС_',
+              'real_name': 'lot2383_doc4'}], 'customer': 'ООО "Иркутская нефтяная компания"',
+             'status': 1,
+             'number': 'ДС-1130-18',
+             'sub_start_date': ('19.09.2018 17:42', 8),
+             'sub_close_date': ('02.10.2018 23:59', 8),
+             'region': 38, 'id': 'ДС-1130-18_1'
+        }
+
+        self.assertEqual(true_result, result)
+
+    def test_get_arc_after_tender_list(self):
+        with open(self.path_after_arc_tender_list) as data_file:
+            html = BeautifulSoup(data_file, 'lxml')
+        items_html = html.find('table', {'class': 'lot_list'})
+        result = self.parser.get_arc_after_tender_list(items_html)
+        #print(result[0])
+        self.assertEqual(20, len(result))
+        true_result = {
+            'number': 'Т-161-18',
+            'status': 4,
+            'data_type': 'arc_after',
+            'id': 'Т-161-18_1',
+            'end_date': '19.09.2018 15:27, (Иркутск) GMT +08:00',
+            'name': 'Выполнение реконструкции действующей ВЛ 35кВ УКПГ-ДНС-УПН (СМР, ПНР, поставка материалов)',
+            'winner': None
         }
         self.assertEqual(true_result, result[0])
 
-    def test_get_tender_lots_data(self):
-        with open(self.path_tender_data) as data_file:
+    def test_get_active_before_tender_list_with_active(self):
+        with open(self.path_before_active_tender_list) as data_file:
             html = BeautifulSoup(data_file, 'lxml')
-        result = self.parser.get_tender_lots_data(html)
-        #print(result)
+        items_html = html.find('div', {'class': 'tenders'})
+        result = self.parser.get_arc_before_tender_list(items_html)
         self.assertEqual(1, len(result))
-        true_result = [{
-            'status': 'Прием заявок на участие', 
-            'scoring_date': '03.09.20 23:00', 
-            'trade_date': '03.09.20 09:00', 
-            'positions': [{'name': '"Производство мебели для офисов и предприятий торговли"', 'quantity': '35'}], 
-            'sub_close_date': '20.08.20 10:00', 
-            'name': None, 
-            'currency': 'RUB', 
-            'customer': 'ПАО "НПО "Стрела"', 
-            'guarantee_app': None, 
-            'publication_date': '27.07.20 16:04', 
-            'number': 1, 'okpd2': ['31.01.11 Мебель металлическая для офисов'], 
-            'delivery_place': '300002, г. Тула, ул. Арсенальная, д.2.', 
-            'order_view_date': None, 
-            'scoring_datetime': '03.09.20 23:00', 
-            'price': None, 
-            'payment_terms': None, 
-            'quantity': '35 шт.\n (в соответствии с техническим заданием и проектом Договора)'
-        }]
-        self.assertEqual(true_result, result)
-
-    def test_get_attachments(self):
-        with open(self.path_tender_data) as data_file:
-            html = BeautifulSoup(data_file, 'lxml')
-        result = self.parser.get_attachments(html)
         #print(result)
-        self.assertEqual(6, len(result))
         true_result = {
-            'display_name': 'ТЗ',
-            'publication_date': '27.07.2018', 
-            'real_name': 'ТЗ.pdf', 
-            'url': 'https://etp.gpb.ru/file/get/t/LotDocuments/id/548277/name/5b5b14624eb171.61672601'
+            'name': 'Выполнение \nстроительства "под ключ" (СМР, ПНР) объекта: "Компрессорная станция для \nтранспорта и закачки в пласт сухого-отбензиненного газа на Марковском \nнефтегазоконденсатном месторождении"',
+            'number': 'Т-470-17',
+            'winner': '30-11-2017',
+            'data_type': 'arc_before',
+            'status': 4,
+            'id': 'Т-470-17_1',
+            'customer': 'ООО "Иркутская нефтяная компания"',
+            'end_date': '17.07.2017'
         }
         self.assertEqual(true_result, result[0])
 
-    def test_get_org_data(self):
-        with open(self.path_tender_data) as data_file:
+    def test_get_arc_before_tender_list_with_arc(self):
+        with open(self.path_before_arc_tender_list) as data_file:
             html = BeautifulSoup(data_file, 'lxml')
-        result = self.parser.get_org_data(html)
-        #print(result)
+        items_html = html.find('div', {'class': 'tenders'})
+        result = self.parser.get_arc_before_tender_list(items_html)
+        self.assertEqual(10, len(result))
+        #print(result[5])
         true_result = {
-            'phone': '7-472-393782', 
-            'name': 'Публичное акционерное общество "Научно-производственное объединение "Стрела"', 
-            'place': 'Тула', 
-            'address': '300002, Российская Федерация, Тульская область, Тула, М. Горького, 6', 
-            'fax': '7-4872-341104', 
-            'fio': 'Минайлова Светлана Николаевна', 
-            'email': 'zakupki@npostrela.net', 
-            'region': 71
+            'status': 3,
+            'end_date': '24.08.2017',
+            'id': 'Т-246-17_1',
+            'data_type': 'arc_before',
+            'customer': 'ООО "Иркутская нефтяная компания"',
+            'name': 'РВД, фитинги к РВД',
+            'winner': 'ООО "СИБИРСКИЕ ТЕХНОЛОГИИ"; ЗАО "Энерпром-Гидропривод"; ООО "ТК "Каскад"; ',
+            'number': 'Т-246-17'
         }
-        self.assertEqual(true_result, result)
+        self.assertEqual(true_result, result[5])
 
 
 if __name__ == '__main__':

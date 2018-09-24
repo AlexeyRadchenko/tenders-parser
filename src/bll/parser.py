@@ -11,6 +11,7 @@ class Parser:
         self.base_url = base_url
 
     def get_arc_after_status(self, status_str):
+        #print('_'+status_str+'_')
         if status_str == 'завершен':
             return 3
         elif status_str == 'отменен':
@@ -23,7 +24,7 @@ class Parser:
         for i, row in enumerate(data_rows):
             row_values = row.find_all('td')
             arc_data.append({
-                'id': '{}_1'.format(row_values[0].text),
+                'id': '{}_1'.format(row_values[0].text.replace(' ', '')),
                 'number': row_values[0].text,
                 'name': names[i].find('h2').text,
                 'end_date': row_values[1].text,
@@ -60,7 +61,7 @@ class Parser:
             head = tender.find('div', {'class': 'tenders_item_head'}).find('tr').find_all('td')
             content = tender.find('div', {'class': 'tenders_item_content'})
             arc_data.append({
-                'id': '{}_1'.format(head[0].text),
+                'id': '{}_1'.format(head[0].text.replace('\xa0', '').replace(' ', '')),
                 'name': content.find('h2').find('a').text,
                 'number': head[0].text,
                 'status': 3 if head[3].text == 'Исполнен' else 4,

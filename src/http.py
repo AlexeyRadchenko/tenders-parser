@@ -28,7 +28,6 @@ class Http:
         pagination = html.find('div', {'class': 'modern-page-navigation'}).find_all('a')
         #print(pagination)
         if pagination:
-            print(int(pagination[5].text))
             return int(pagination[5].text)
 
     def get_tender_list(self):
@@ -36,14 +35,14 @@ class Http:
         for i, url in enumerate(self.source_url_list):
             params = None
             max_pages = None
-            # собираем сведения об архивных тендерах в верстке ПОСЛЕ 17.07.2017, инициализация параметров влож. цикла
+            # собираем сведения об АРХИВНЫХ тендерах в верстке ПОСЛЕ 17.07.2017, инициализация параметров влож. цикла
             if i == 0:
                 params_key = 'cpage'
                 params = {params_key: 1}
                 search_args = 'table', {'class': 'lot_list'}
                 get_max_pages_func = self.get_max_pages_after
                 search_type = 'arc_after'
-            # собираем сведения об активных тендерах в верстке ПОСЛЕ 17.07.2017, т.к. одна странница делаем запрос
+            # собираем сведения об АКТИВНЫХ тендерах в верстке ПОСЛЕ 17.07.2017, т.к. одна странница делаем запрос
             elif i == 1:
                 r = get(url, proxies=self.proxy)
                 res = retry(r, 5, 100)
@@ -58,14 +57,14 @@ class Http:
                     }
                 elif res.status_code == 500:
                     break
-            # собираем сведения об активных тендерах в верстке ДО 17.07.2017, инициализация параметров влож. цикла
+            # собираем сведения об АРХИВНЫХ тендерах в верстке ДО 17.07.2017, инициализация параметров влож. цикла
             elif i == 2:
                 params_key = 'PAGEN_1'
                 params = {params_key: 1}
                 search_args = 'div', {'class': 'tenders'}
                 get_max_pages_func = self.get_max_pages_before
                 search_type = 'arc_before'
-            # собираем сведения об активных тендерах в верстке ДО 17.07.2017
+            # собираем сведения об АКТИВНЫХ тендерах в верстке ДО 17.07.2017
             elif False and i == 3:
                 r = get(url, proxies=self.proxy)
                 res = retry(r, 5, 100)
@@ -81,7 +80,7 @@ class Http:
             # цикл перебора многостраничных данных
             if i == 0 or i == 2:
                 while True:
-                    print(params, max_pages)
+                    #print(params, max_pages)
                     r = get(url, params=params, proxies=self.proxy)
                     res = retry(r, 5, 100)
                     if res is not None and res.status_code == 200:
