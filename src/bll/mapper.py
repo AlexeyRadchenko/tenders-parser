@@ -46,7 +46,8 @@ class Mapper:
             attachments.append({
                 'displayName': file['display_name'],
                 'href': file['url'],
-                'publicationDateTime': self.tools.get_utc_epoch(file['publication_date'][0]),
+                'publicationDateTime': self.tools.get_utc_epoch(
+                    file['publication_date'][0]) if file['publication_date'] else None,
                 'realName': file['real_name'],
                 'size': None
             })
@@ -92,13 +93,15 @@ class Mapper:
                 'name': 'ООО “Уралхим”',
             },
             # Дата публикации тендера UNIX EPOCH (UTC)
-            'publicationDateTime': self.tools.get_utc_epoch(item['publication_date'][0]),
+            'publicationDateTime': self.tools.get_utc_epoch(
+                item['publication_date'][0]) if item['publication_date'] else None,
             'region': 77,
             # Дата окончания подачи заявок UNIX EPOCH (UTC)
             'submissionCloseDateTime': self.tools.get_utc_epoch(
                 item['sub_close_date']) if item['sub_close_date'] else None,
             # Дата начала подачи заявок UNIX EPOCH (UTC)
-            'submissionStartDateTime': self.tools.get_utc_epoch(item['publication_date'][0]),
+            'submissionStartDateTime': self.tools.get_utc_epoch(
+                item['publication_date'][0]) if item['publication_date'] else None,
             'tenderSearch': self.get_tender_search(item),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
