@@ -42,7 +42,7 @@ class Collector:
         # Обработка тендеров
         count = 0
         for tender_data_list in tender_data_list_gen:
-            tender_items_list = self.parser.get_part_data(tender_data_list[0], tender_data_list[1])
+            tender_items_list = self.parser.get_part_data(*tender_data_list)
             total = len(tender_items_list)
             for i, item in enumerate(tender_items_list):
                 if self.publish_date:

@@ -58,7 +58,7 @@ class Http:
                         items_div = html.find('div', {'data-id': data_id})
                         if items_div:
                             items_data_list = items_div.find_all('div', {'class': 'tenders-item'})
-                            yield items_data_list, i
+                            yield items_data_list, i, url, params_key, params[params_key]
                             if not self.next_page_exist(html, data_id):
                                 break
                             else:
