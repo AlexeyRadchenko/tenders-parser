@@ -21,18 +21,16 @@ class Mapper:
 
     @staticmethod
     def get_global_search(item):
-        return '{} {} {}'.format(
+        return '{} {}'.format(
             item['number'],
             item['name'] if item['name'] else '',
-            'ООО «Иркутская нефтяная компания»',
         )
 
     @staticmethod
     def get_tender_search(item):
-        return '{} {} {}'.format(
+        return '{} {}'.format(
             item['number'] if item['number'] else '',
             item['name'] if item['name'] else '',
-            'ООО «Иркутская нефтяная компания»'
         )
 
     def get_attachments(self, files):
@@ -98,7 +96,7 @@ class Mapper:
                 item['sub_close_date'][0], item['sub_close_date'][1]) if item.get('sub_close_date') else None,
             # Дата начала подачи заявок UNIX EPOCH (UTC)
             'submissionStartDateTime': self.tools.get_utc_epoch(
-                item['sub_start_date'][0], item['sub_start_date'][1]) if item.get('sub_close_date') else None,
+                item['sub_start_date'][0], item['sub_start_date'][1]) if item.get('sub_start_date') else None,
             'tenderSearch': self.get_tender_search(item),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),

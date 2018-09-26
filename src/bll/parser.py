@@ -24,13 +24,14 @@ class Parser:
         for i, row in enumerate(data_rows):
             row_values = row.find_all('td')
             arc_data.append({
-                'id': '{}_1'.format(row_values[0].text.replace(' ', '')),
-                'number': row_values[0].text,
+                'id': '{}_1'.format(row_values[0].text.replace('\xa0', '').replace(' ', '')),
+                'number': row_values[0].text.replace(' ', ''),
                 'name': names[i].find('h2').text,
-                'end_date': row_values[1].text,
+                'sub_close_date': self.clear_date_str(row_values[1].text),
                 'winner': row_values[2].text if row_values[2].text != '\xa0' else None,
                 'status': self.get_arc_after_status(row_values[3].text),
                 'data_type': 'arc_after',
+                'link': 'https://tenders.irkutskoil.ru/tender_result.php',
             })
         return arc_data
 
@@ -46,6 +47,7 @@ class Parser:
             'region': 38,
             'customer': 'ООО "Иркутская нефтяная компания"',
             'sub_start_date': self.clear_date_str(table_rows_data[1].text),
+            'publication_date': self.clear_date_str(table_rows_data[1].text),
             'sub_close_date': self.clear_date_str(table_rows_data[2].text),
             'attachments': self.get_attachments(attachments_data, table_rows_data[1].text),
             'link': url,
@@ -63,12 +65,14 @@ class Parser:
             arc_data.append({
                 'id': '{}_1'.format(head[0].text.replace('\xa0', '').replace(' ', '')),
                 'name': content.find('h2').find('a').text,
-                'number': head[0].text,
+                'number': head[0].text.replace(' ', ''),
                 'status': 3 if head[3].text == 'Исполнен' else 4,
                 'customer': 'ООО "Иркутская нефтяная компания"',
-                'end_date': head[1].text.replace('\n', '').replace('\t', '').replace('-', '.'),
+                'sub_close_date': self.clear_date_str(
+                    head[1].text.replace('\n', '').replace('\t', '').replace('-', '.')),
                 'winner': head[2].text.replace('\n', '').replace('\t', ''),
                 'data_type': 'arc_before',
+                'link': 'http://irkutskoil.ru' + content.find('h2').find('a').attrs['href']
             })
         return arc_data
 
@@ -103,7 +107,7 @@ class Parser:
     def get_file_real_name(self, url):
         name = re.search(r'[^\/]+$', url)
         if name:
-            return name.group().split('.')[0]
+            return name.group()
 
     def get_attachments(self, data_html, tender_date):
         """

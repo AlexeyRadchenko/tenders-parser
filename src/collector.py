@@ -18,7 +18,7 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
-
+        """
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
@@ -28,7 +28,7 @@ class Collector:
                                          rabbitmq['username'],
                                          rabbitmq['password'],
                                          rabbitmq['queue'])
-
+"""
     def collect(self):
         """
         Сбор тендеров
@@ -80,22 +80,22 @@ class Collector:
             tender_data_html = self.http.get_tender_data(item.get('link'))
             item = self.parser.get_active_after_tender_data(tender_data_html, item.get('link'))
 
-        dbmodel = self.repository.get_one(item['id'])
-        if dbmodel is None or dbmodel['status'] != item['status']:
+        #dbmodel = self.repository.get_one(item['id'])
+        #if dbmodel is None or dbmodel['status'] != item['status']:
 
-        #if True:
+        if True:
             model = self.mapper.map(item)
-            #print(model)
+            print(model)
 
             short_model = {
                 '_id': model['id'],
                 'status': model['status']
             }
             # добавляем/обновляем в MongoDB
-
+"""
             self.repository.upsert(short_model)
             print('Upserted in MongoDB')
 
             # отправляем в RabbitMQ
             self.rabbitmq.publish(model)
-            print('Published to RabbitMQ')
+            print('Published to RabbitMQ')"""
