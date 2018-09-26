@@ -19,7 +19,7 @@ class Http:
 
     def get_max_pages_after(self, html):
         pagination = html.find('div', {'class': 'multip'}).find_all('a')
-        print(pagination)
+        #print(pagination)
         if pagination:
             max_pages = re.search(r'\d+', pagination[8].attrs['href'])
             return int(max_pages.group(0))
