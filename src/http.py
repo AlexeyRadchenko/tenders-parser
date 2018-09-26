@@ -54,7 +54,7 @@ class Http:
                     res = retry(r, 5, 100)
                     if res is not None and res.status_code == 200:
                         html = BeautifulSoup(res.content, 'lxml')
-                        print(self.next_page_exist(html, data_id))
+                        #print(self.next_page_exist(html, data_id))
                         items_div = html.find('div', {'data-id': data_id})
                         if items_div:
                             items_data_list = items_div.find_all('div', {'class': 'tenders-item'})
