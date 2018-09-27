@@ -12,11 +12,11 @@ class Parser:
 
     @staticmethod
     def item_filter(item_data):
-        """если номера тендера содержит букву возвращаем его """
-        regex = re.compile(r'\D')
-        number = item_data.find('p', {'itemprop': 'name'}).text.split()[-1]
-        clear_number = number.strip()
-        return clear_number if regex.match(clear_number) else None
+        url = item_data.find('td', {'headers': 'CODE'}).find('a')
+        if url:
+            return re.sub(r'\s(\d)', '',  url.text)
+        else:
+
 
     @staticmethod
     def clear_date_str(date_str):
