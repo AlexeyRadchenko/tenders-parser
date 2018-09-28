@@ -10,13 +10,12 @@ class Parser:
         self.tools = Tools()
         self.base_url = base_url
 
-    @staticmethod
-    def item_filter(item_data):
-        url = item_data.find('td', {'headers': 'CODE'}).find('a')
+    def item_filter(self, column):
+        url = column.find('a')
         if url:
-            return re.sub(r'\s(\d)', '',  url.text)
+            return re.sub(r'\s(\d)', '',  url.text), '{}{}{}'.format(self.base_url, '/pls/tzp/', url.attrs['href'])
         else:
-
+            return column.text, None
 
     @staticmethod
     def clear_date_str(date_str):
@@ -48,28 +47,29 @@ class Parser:
 
     @staticmethod
     def clear_double_data_str(data_str):
-        if not data_str or data_str == 'Цена не указана' or data_str == 'Не установлен':
+        if not data_str:
             return None
-        elif '(сумма блокируется)' in data_str:
-            data_str = data_str.replace('(сумма блокируется)', '').strip()
-        return float(data_str.split('\n')[0].replace(' ', '').replace(',', '.'))
+        return float(data_str.replace(' ', '').replace(',', '.'))
 
     def get_part_data(self, data_list):
         """парсим строки пришедшие в запросе возвращаем список первичных данных"""
         item_list = []
         for item_data in data_list:
-            item_number = self.item_filter(item_data)
+            table_columns = item_data.find_all('td')
+            item_number, url = self.item_filter(table_columns[1])
             if item_number:
                 #print(item_number)
                 item_list.append({
                     'number': item_number,
-                    'name': item_data.find('p', {'itemprop': 'description'}).text,
-                    'link': self.base_url + item_data.attrs['href'],
-                    'sub_close_date': self.clear_date_str(item_data.find(
-                        'p', class_='block__related_details_date').text),
-                    'type': item_data.find('p', class_='block__related_about_title').text,
-                    'price': self.clear_double_data_str(item_data.find(
-                        'div', class_='block__related_details_sum').find('span').text),
+                    'name': table_columns[2].text,
+                    'link': url,
+                    'status': table_columns[3].text,
+                    'customer': table_columns[4].text,
+                    'price': self.clear_double_data_str(table_columns[5].text),
+                    'currency': table_columns[6].text,
+                    'publication_date': table_columns[7].text,
+                    'sub_start_date': table_columns[8].text,
+                    'sub_close_date': table_columns[9].text,
                 })
         return item_list
 

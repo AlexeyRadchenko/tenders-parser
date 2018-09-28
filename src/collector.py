@@ -70,7 +70,9 @@ class Collector:
         * Если что-то поменялось (статус), то обновляем в базе и отсылаем в очередь
           Иначе пропускаем
         """
+        print(item)
         # Получение HTML страницы с данными тендера
+        """
         tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
         multilot = True if len(tender_lots) > 1 else False
@@ -92,7 +94,7 @@ class Collector:
                 }
 
                 # добавляем/обновляем в MongoDB
-                """
+                
                 self.repository.upsert(short_model)
                 print('Upserted in MongoDB')
 

@@ -16,6 +16,8 @@ class Http:
 
     switch_url = 'https://etp.tatneft.ru/pls/tzp/wwv_flow.accept'
 
+    get_data_url = 'https://etp.tatneft.ru/pls/tzp/wwv_flow.show'
+
     switch = {
         'p_flow_id': '220',
         'p_flow_step_id': '562',
@@ -57,7 +59,6 @@ class Http:
     'p_widget_action_mod': 'pgR_min_row=26max_rows=25rows_fetched=25',
     'p_widget_num_return': '25', запрос второй страницы по 25 строк
     """
-
     def next_page_exist(self, html):
         next_page_selector = html.find('ul', {'class': 'a-IRR-pagination'}).find_all('li')[-1]
         if next_page_selector.attrs.get('aria-hidden'):
@@ -96,18 +97,19 @@ class Http:
             self.switch['p_page_checksum'] = p_check_sum
             self.switch['p_arg_checksums'] = p_arg_checksum
 
-            session.post(self.switch, data=self.switch, proxies=self.proxy)
+            session.post(self.switch_url, data=self.switch, proxies=self.proxy)
 
             self.init_request_form_params['p_instance'] = instance_id
             self.init_request_form_params['p_request'] = 'PLUGIN={}'.format(ajax_identifier)
+            self.init_request_form_params['p_widget_num_return'] = str(quantity_items)
             last_show_item_num = 1
             while True:
                 print(last_show_item_num)
                 p_widget_action_mod = 'pgR_min_row={0}max_rows={1}rows_fetched={1}'.format(
                     last_show_item_num, quantity_items
                 )
-                self.init_request_form_params['p_widget_action_mod'] = page_param
-                r = post(self.source_url, data=self.init_request_form_params, proxies=self.proxy)
+                self.init_request_form_params['p_widget_action_mod'] = p_widget_action_mod
+                r = session.post(self.get_data_url, data=self.init_request_form_params, proxies=self.proxy)
                 res = retry(r, 5, 100)
                 if res is not None and res.status_code == 200:
                     html = BeautifulSoup(res.content, 'lxml')
@@ -117,7 +119,7 @@ class Http:
                         yield items_data_list
                         if not self.next_page_exist(html):
                             break
-                        page += 15
+                        last_show_item_num += quantity_items
                     else:
                         break
                 elif res.status_code == 500:
