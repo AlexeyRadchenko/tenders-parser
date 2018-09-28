@@ -15,7 +15,7 @@ class Parser:
         if url:
             return re.sub(r'\s(\d)', '',  url.text), '{}{}{}'.format(self.base_url, '/pls/tzp/', url.attrs['href'])
         else:
-            return column.text, None
+            return re.search(r'\d+-\d+').group(), None
 
     @staticmethod
     def clear_date_str(date_str):
@@ -60,6 +60,7 @@ class Parser:
             if item_number:
                 #print(item_number)
                 item_list.append({
+                    'id': '{}_1'.format(item_number),
                     'number': item_number,
                     'name': table_columns[2].text,
                     'link': url,

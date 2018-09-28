@@ -38,7 +38,7 @@ class Collector:
         *   Итерация по каждому тендеру
         """
         # Получение генератора списка данных тендеров
-        tender_data_list_gen = self.http.get_tender_list()
+        tender_data_list_gen = self.http.get_tender_list(quantity_items=100)
         # Обработка тендеров
         count = 0
         for tender_data_list in tender_data_list_gen:
@@ -61,6 +61,19 @@ class Collector:
             if count == self.quantity:
                 break
 
+    def get_db_model_for_rd_item(self, item_id):
+        tn_dbmodel = self.repository.get_one('ТН-'+ item_id)
+        zp_dbmodel = self.repository.get_one('ЗП-' + item_id)
+        rd_dbmodel = self.repository.get_one('РД-' + item_id)
+        if tn_dbmodel:
+            return tn_dbmodel
+        elif zp_dbmodel:
+            return zp_dbmodel
+        elif rd_dbmodel:
+            return rd_dbmodel
+        else:
+            return None
+
     def process_tender(self, item):
         """
         Метод обработки тендера
@@ -72,7 +85,10 @@ class Collector:
         """
         print(item)
         # Получение HTML страницы с данными тендера
-        """
+        if not item.get('link'):
+            pass
+            #dbmodel = self.get_db_model_for_rd_item(item['id'])
+        """   
         tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
         multilot = True if len(tender_lots) > 1 else False
