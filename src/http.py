@@ -1,6 +1,7 @@
 from src.bll.retrier import retry
-from requests import post
+from requests import get, post, Session
 from bs4 import BeautifulSoup
+import re
 
 
 class Http:
@@ -10,32 +11,52 @@ class Http:
         else:
             self.proxy = None
 
-    source_url = 'https://etp.tatneft.ru/pls/tzp/wwv_flow.show'
+    session_and_params_init_url = 'https://etp.tatneft.ru/pls/tzp/f?p=220:562:::::' \
+                                  'P562_OPEN_MODE,GLB_NAV_ROOT_ID,GLB_NAV_ID:,12920020,12920020'
 
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'Accept': 'text/html, */*; q=0.01',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-        'Content-Length': '348',
-        'Cookie': 'GLOBAL_OBERON=ORA_WWV-GpESRgE_2FIHkeTuN--xgIeZ; _ym_uid=1537952218596738451; _ym_d=1537952218; _ym_visorc_48062852=w; _ga=GA1.2.1475219486.1537952219; _gid=GA1.2.280130067.1537952219; _ym_isad=2',
-        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_x64; rv:62.0) Gecko/20100101 Firefox/62.0',
-        'X-Requested-With': 'XMLHttpRequest'
+    switch_url = 'https://etp.tatneft.ru/pls/tzp/wwv_flow.accept'
+
+    switch = {
+        'p_flow_id': '220',
+        'p_flow_step_id': '562',
+        'p_instance': None,  # палучаем параметр после создание сессии, обязателен !
+        'p_page_submission_id': None,  # палучаем параметр после создание сессии, обязателен !
+        'p_request': 'P562_STATE',
+        'p_arg_names': ['10532953143930147', '10534736305934762', '10535342538936485', '10535948079938095',
+                        '24971825244917975', '26372130093113705', '1437807258407274', '77340431388563902',
+                        '45808826609401811', '45809533882403910', '12683322157747701', '16945835513307812',
+                        '23308440874903678', '18242524906460956', '16946623093332668', '20314841512322654',
+                        '27125454544558788', '77524428635937367', '77552410877042629', '77524700153948142',
+                        '77543707705237610', '80658314736165424'
+                        ],
+        'p_t08': '-100',
+        'p_t18': '174738740000',
+        'p_t19': '0',
+        'p_t20': 'ALL', # основновй параметр для вывода текущи/всех/закрытых тендеров, обязателен !
+        'p_arg_checksums': None,  # палучаем параметр после создание сессии, обязателен !
+        'p_page_checksum': None,  # палучаем параметр после создание сессии, обязателен !
     }
 
     init_request_form_params = {
         'p_flow_id': '220',
         'p_flow_step_id': '562',
-        'p_instance': '770888636588',
-        'p_request': 'PLUGIN=2076931AFCD50898683D5E431CA90D7BE4DD2032F49C436C328615CB66D07DA0',
+        'p_instance': None,  # палучаем параметр после создание сессии, обязателен !
+        'p_request': None,  # палучаем параметр после создание сессии, обязателен !
         'p_widget_action': 'PAGE',
-        'p_widget_action_mod': None,
+        'p_widget_action_mod': None,  # переметр с номером страницы, и количестовом элементов на ней , обязателен !
         'p_widget_mod': 'ACTION',
         'p_widget_name': 'worksheet',
-        'p_widget_num_return': '15',
+        'p_widget_num_return': None,  # параметр с количестовм элементов , обязателен !
         'x01': '25399118176800742',
         'x02': '25400525673806806',
     }
+    """пример параметров для запроса 100 строк для первой и второй страницы
+    'p_widget_action_mod': 'pgR_min_row=1max_rows=25rows_fetched=25',
+    'p_widget_num_return': '25', запрос первой страницы по 25 строк
+    
+    'p_widget_action_mod': 'pgR_min_row=26max_rows=25rows_fetched=25',
+    'p_widget_num_return': '25', запрос второй страницы по 25 строк
+    """
 
     def next_page_exist(self, html):
         next_page_selector = html.find('ul', {'class': 'a-IRR-pagination'}).find_all('li')[-1]
@@ -44,28 +65,63 @@ class Http:
         else:
             return True
 
-    def get_tender_list(self):
+    def get_pulgin_identifier(self, js_string):
+        ident = re.findall(r'"\w{64}"', js_string)
+        if ident:
+            return ident[-1].strip('"')
+
+    def get_session_params(self, response):
+        html = BeautifulSoup(response, 'lxml')
+        sub_ident = html.find('input', {'name': 'p_page_submission_id'}).attrs['value']
+        page_check_sum = html.find('input', {'name': 'p_page_checksum'}).attrs['value']
+        page_arg_checsums = html.find('input', {'name': 'p_arg_checksums'}).attrs['value']
+        url = html.find('ul', {'class': 'dhtmlMenuLG2'}).find_all('li')[1].find('a').attrs['href']
+        ajax_identifier = self.get_pulgin_identifier(html.find_all('script')[-1].text)
+        return url.split(':')[2], sub_ident, page_check_sum, page_arg_checsums, ajax_identifier
+
+    def get_tender_list(self, quantity_items=15):
         """генератор списков тендеров"""
-        page = 1
-        while True:
-            print(page)
-            page_param = 'pgR_min_row={}max_rows=15rows_fetched=15'.format(page)
-            self.init_request_form_params['p_widget_action_mod'] = page_param
-            r = post(self.source_url, data=self.init_request_form_params, proxies=self.proxy)
-            res = retry(r, 5, 100)
-            if res is not None and res.status_code == 200:
-                html = BeautifulSoup(res.content, 'lxml')
-                items_div = html.find('table', {'class': 'a-IRR-table'})
-                if items_div:
-                    items_data_list = items_div.find_all('tr')[1:]
-                    yield items_data_list
-                    if not self.next_page_exist(html):
+        with Session() as session:
+            """сервер etp.tatneft.ru создает сессию и инциализирует идентификаторы для запросов, если их не установить, то будем
+            получать ошибку. Если запросов не поступает определенное время, сервер сессию закрывает. Для каждой новой
+            сессии - параметры будут сгенерированы сервером заново и будут отличатся.
+            """
+            params_response = session.get(self.session_and_params_init_url, proxies=self.proxy)
+            instance_id, submission_id, p_check_sum, p_arg_checksum, ajax_identifier = self.get_session_params(
+                params_response.content
+            )
+            # устанавливаем параметры для переключения на запросы из полного списка тендеров
+            self.switch['p_instance'] = instance_id
+            self.switch['p_page_submission_id'] = submission_id
+            self.switch['p_page_checksum'] = p_check_sum
+            self.switch['p_arg_checksums'] = p_arg_checksum
+
+            session.post(self.switch, data=self.switch, proxies=self.proxy)
+
+            self.init_request_form_params['p_instance'] = instance_id
+            self.init_request_form_params['p_request'] = 'PLUGIN={}'.format(ajax_identifier)
+            last_show_item_num = 1
+            while True:
+                print(last_show_item_num)
+                p_widget_action_mod = 'pgR_min_row={0}max_rows={1}rows_fetched={1}'.format(
+                    last_show_item_num, quantity_items
+                )
+                self.init_request_form_params['p_widget_action_mod'] = page_param
+                r = post(self.source_url, data=self.init_request_form_params, proxies=self.proxy)
+                res = retry(r, 5, 100)
+                if res is not None and res.status_code == 200:
+                    html = BeautifulSoup(res.content, 'lxml')
+                    items_div = html.find('table', {'class': 'a-IRR-table'})
+                    if items_div:
+                        items_data_list = items_div.find_all('tr')[1:]
+                        yield items_data_list
+                        if not self.next_page_exist(html):
+                            break
+                        page += 15
+                    else:
                         break
-                    page += 15
-                else:
+                elif res.status_code == 500:
                     break
-            elif res.status_code == 500:
-                break
 
     def get_tender_data(self, url):
         """данные отдельного тендера"""
