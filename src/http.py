@@ -131,7 +131,7 @@ class Http:
         res = retry(r, 5, 100)
         if res is not None and res.status_code == 200:
             html = BeautifulSoup(res.content, 'lxml')
-            return html
+            return html.find('table', {'id': 'main'})
         return None
 
     def get_organization(self, customers):

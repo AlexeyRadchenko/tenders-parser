@@ -62,7 +62,7 @@ class Collector:
                 break
 
     def get_db_model_for_rd_item(self, item_id):
-        tn_dbmodel = self.repository.get_one('ТН-'+ item_id)
+        tn_dbmodel = self.repository.get_one('ТН-' + item_id)
         zp_dbmodel = self.repository.get_one('ЗП-' + item_id)
         rd_dbmodel = self.repository.get_one('РД-' + item_id)
         if tn_dbmodel:
@@ -83,11 +83,15 @@ class Collector:
         * Если что-то поменялось (статус), то обновляем в базе и отсылаем в очередь
           Иначе пропускаем
         """
-        print(item)
         # Получение HTML страницы с данными тендера
         if not item.get('link'):
-            pass
             #dbmodel = self.get_db_model_for_rd_item(item['id'])
+            #if not dbmodel or dbmodel=[''] != item[]
+            print(item['id'])
+        else:
+            print(item)
+            tender_data_html = self.http.get_tender_data('https://etp.tatneft.ru/pls/tzp/f?p=220:2155:8588935612340::::P2155_REQ_ID,P2155_PREV_PAGE:2075471700021,562') #self.http.get_tender_data(item['link'])
+            tender_data = self.parser.get_tender_data(tender_data_html)
         """   
         tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)
