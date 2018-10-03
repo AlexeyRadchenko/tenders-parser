@@ -1,0 +1,44 @@
+.hw20{width:20px;height:16px;}.va{padding-top:0px;margin-top:6px;/*_padding-top:0px;*/vertical-align:bottom !important;}.required{background:transparent url(../ico/group/props/required.png) no-repeat scroll -4px -5px !important;}.transient{background:transparent url(../ico/group/props/transient.png) no-repeat scroll 12px 7px !important;}.base_type{background:transparent url(../ico/group/props/base_type.png) no-repeat scroll 2px 0px;}.num{background:transparent url(../ico/group/props/num.png) no-repeat scroll 2px 0px;}.txt{background:transparent url(../ico/group/props/txt.png) no-repeat scroll 2px 0px;}.lbl{background:transparent url(../ico/group/props/lbl.png) no-repeat scroll 2px 0px;}.dte{background:transparent url(../ico/group/props/dte.png) no-repeat scroll 2px 0px;}.ptr{background:transparent url(../ico/group/props/ptr.png) no-repeat scroll 2px 0px;}.par_ptr{background:transparent url(../ico/group/props/par_ptr.png) no-repeat scroll 2px 0px;}.fle{background:transparent url(../ico/group/props/fle.png) no-repeat scroll 2px 0px;}.bool{background:transparent url(../ico/group/props/bool.png) no-repeat scroll 2px 0px;}.metadata_object{background:transparent url(../ico/md_object/metadata_object.png) no-repeat scroll 2px 0px;}.ref{background:transparent url(../ico/md_object/ref.png) no-repeat scroll 2px 0px;}.ref_group{background:transparent url(../ico/md_object/ref_group.png) no-repeat scroll 2px 0px;}.ref_catalog{background:transparent url(../ico/md_object/ref_catalog.png) no-repeat scroll 2px 0px;}.attr_group{background:transparent url(../ico/md_object/attr_group.png) no-repeat scroll 2px 0px;}.attr{background:transparent url(../ico/md_object/attr.png) no-repeat scroll 2px 0px;}.domain{background:transparent url(../ico/md_object/domain.png) no-repeat scroll 2px 0px;}.uk{background:transparent url(../ico/md_object/uk.png) no-repeat scroll 2px 0px;}.uk_entry{background:transparent url(../ico/md_object/uk_entry.png) no-repeat scroll 2px 0px;}.inverse_attr{background:transparent url(../ico/md_object/inverse_attr.png) no-repeat scroll 2px 0px;}.context_attr{background:transparent url(../ico/md_object/context_attr.png) no-repeat scroll 2px 0px;}
+.clsfr_part{background:transparent url(../ico/md_object/clsfr_part.png) no-repeat scroll 2px 0px;}
+.clsfr_class{background:transparent url(../ico/md_object/clsfr_class.png) no-repeat scroll 2px 0px;}
+.clsfr_ref_class{background:transparent url(../ico/md_object/clsfr_ref_class.png) no-repeat scroll 2px 0px;}
+.warn{background:url(../ico/region/warning.png);background-repeat:no-repeat;padding-left:28px;height:25px;padding-top:7px;}
+
+
+.md_icon .md{
+	position:relative;
+	/*float:left;*/
+}
+.md_icon .type{
+	left:-18px;
+	_left:-20px;
+	top:-8px;
+	z-index:1;
+}
+.md_icon .class{
+	z-index:0;
+	top:1px;
+}
+.md_icon .status{
+	left:-7px;
+	_left:-7px;
+	top:3px;
+}
+.md_icon .status_req{
+	left:-17px;
+	_left:-17px;
+	top:3px;
+}
+
+.md_icon{
+	white-space:nowrap;
+	width:22px;
+	overflow:hidden;
+	/*position:relative;*/
+}
+
+/*
+.va img{
+	vertical-align:bottom;
+}
+*/

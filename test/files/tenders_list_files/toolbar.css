@@ -1,0 +1,264 @@
+/*
+*
+* CSS styles for toolbars
+* 2012.07.25 kuz html5 fix
+*/
+.w100{
+  width:100%;
+}
+
+.toolPanelV td>img {
+  display:block
+}
+
+.wrapRegion td>img {
+  display:block;
+}
+
+td.startPanelH{
+  padding-right:2px;
+  vertical-align:top;
+  text-align:center;
+}
+table.toolPanelH a {	display:block;}
+table.toolPanelH a img {
+  height:  24px;
+  width:   24px;
+  border: solid 1px transparent;
+  vertical-align: text-bottom;
+}
+
+table.toolPanelH a:hover img {
+  border: solid 1px #88AAAA;
+  background-color : #CCFFCC;
+}
+
+
+table.toolPanelH a img.tbBtnDis {
+/*  border: solid 1px transparent;*/
+  background-color : #CCEEDD;
+  vertical-align: text-bottom;
+  cursor:   default;
+  opacity: 0.3;
+  /* IE Only */
+  filter: alpha(opacity=30);
+/*  _filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30);*/
+}
+
+table.toolPanelH a:hover img.tbBtnDis {
+  border: solid 1px transparent;
+  background-color : #CCEEDD;
+  cursor:   default;
+}
+
+table.toolPanelV a img {
+  height:  24px;
+  width:   24px;
+  border:  solid 1px transparent;
+  vertical-align: text-bottom;
+}
+
+table.toolPanelV a:hover img {
+  border:  solid 1px #88AAAA;
+  background-color : #CCFFCC;  
+  vertical-align: text-bottom;
+}
+
+table.toolPanelV a img.tbBtnDis {
+  background-color : #CCEEDD;
+  /* border: solid 1px transparent;  */
+  vertical-align: text-bottom;
+  opacity: 0.3;
+  /* IE Only */
+  filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30);
+  filter: alpha(opacity=30);
+}
+
+table.toolPanelV a:hover img.tbBtnDis {
+  border:  solid 1px transparent;
+  background-color : #CCEEDD;
+  vertical-align: text-bottom;
+  opacity: 0.3;
+  /* IE Only */
+  filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30);
+  filter: alpha(opacity=30);
+}
+
+
+table.toolPanelH {
+  margin: 2px;
+  width:100%;
+  border-collapse: separate;
+}
+
+table.toolPanelH td {
+  background-color: #CAEEDA;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-right: 1px;
+  white-space: nowrap;  border-bottom: 1px solid #a0a0a0;  border-top: 1px solid #a0a0a0;
+}table.toolPanelH td table td{  border-bottom: 0px;  border-top: 0px;
+}
+
+table.toolPanelH td.tbHI {
+  background: none;
+  padding: 0px;  border-bottom: 0px;   border-top: 0px; 
+}
+
+table.toolPanelH td a {
+  margin-left: 2px;
+  margin-right: 2px;
+  color: #D0F0D0;
+}
+
+table.toolPanelH td a:hover {
+  color: #FFFF00;
+  text-decoration: none;
+}
+
+table.toolPanelH td div {
+  width: 1px;
+  height:24px;
+  border-left: dashed 1px #A0A0A0;}
+
+.toolPanelH .tbHI img {
+  display: block;
+}
+
+table.toolPanelV {
+}
+
+table.toolPanelV td {
+  background: url('../ico/toolbar/tbBgV.png') repeat-y top left;
+  width: 37px;
+  padding-top: 1px;
+  padding-bottom: 2px;
+}
+
+table.toolPanelV td.tbVI {
+  width: 37px;
+  height: 4px;
+  background: none;
+  padding: 0px;
+}
+
+table.toolPanelV td a {
+  color: #D0F0D0;
+  display: block;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+table.toolPanelV td a:hover {
+  color: #A0A0A0;
+  text-decoration: none;
+}
+
+table.toolPanelV td div {
+  width: 28px;
+  height: 1px;
+  border-top: dashed 1px #A0A0A0;
+  margin: 0px;
+  padding: 0px;
+  margin-left: 5px;
+  font-size: 0;
+}
+
+.toolPanelH .formlayout {
+  border-collapse: collapse;
+}
+
+.toolPanelH table.radiogroup {
+  border-collapse: collapse;
+}
+
+/*for toolbar buttons*/
+.toolbar-t15L,.toolbar-t15C,.toolbar-t15R{
+  padding:0px !important;
+}
+
+.toolbar-t15C{
+  background-image:url(/img/themes/theme_15/button-m.gif) !important;
+  background-position:center center !important;
+  background-repeat:repeat-x !important;
+  white-space:nowrap !important;
+  padding-right:3px !important;
+  
+}
+
+.toolbar-t15C a{
+  color:black !important;
+}
+
+.buttonHidden{
+  display:none;
+}
+
+table.toolPanelH a img.tbBtnPressed {
+  border : #66BB66 1px solid !important;
+  background-color : #88EE99 !important;
+  cursor:default;
+}
+
+table.toolPanelV a img.tbBtnPressed {
+  border : #66BB66 1px solid !important;
+  background-color : #88EE99 !important;
+  cursor:default;
+}
+
+/*  Поддержка tollbar в строке формы */
+
+table.tool_table_oper{ 
+ width:100%;
+/* background-color:#cceedb;*/
+ border:1px solid gray;
+ border-collapse: collapse;
+ margin:0px;
+ padding:0px;
+}
+
+table.tool_table_oper a img{
+//  height:16px;
+//  width:16px;
+  border: solid 1px transparent;
+}
+
+table.tool_table_oper a:hover img{ 
+// height:16px;
+// width:16px;
+ border: solid 1px #88AAAA;
+ background-color:#CCFFCC;
+}
+
+.tool_null{
+ padding:0px;
+}
+
+.tool_td_100{
+ width:100%; 
+ padding:0px;
+}
+
+table.tool_table_oper_big{ 
+ border-collapse: collapse;
+ margin:0px;
+ padding:0px;
+}
+
+table.tool_table_oper_big a img{
+  border: solid 1px transparent;
+}
+
+table.tool_table_oper_big a:hover img{ 
+ border: solid 1px #88AAAA;
+ background-color:#CCFFCC;
+}
+
+.treeTb{
+	height:100%;
+	padding:0px;
+	margin:0px;
+	border-collapse:collapse;
+}
+
+

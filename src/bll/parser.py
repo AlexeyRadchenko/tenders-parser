@@ -133,7 +133,8 @@ class Parser:
         return main_report
 
     def get_tender_objects_parsed_data(self, html):
-        table_rows = html.find('tbody').find_all('tr')
+        table_rows = html.find_all('tbody')[1].find_all('tr')
+        #print(html.find('tbody'))
         items = []
         for row in table_rows:
             row_values = row.find_all('td')
@@ -181,7 +182,7 @@ class Parser:
         }
         return tender_conditions
 
-    def get_tender_data(self, data_html):
+    def get_tender_data(self, data_html, item):
         tables = data_html.find('table').find('table').find_all('table')
         other_reports_tables = data_html.find('table').find('table').find_all('table', {'class': 'ReportTbl'})
         #instance_id = html.find('input', {'id', 'pInstance'}).attrs['value']
@@ -196,58 +197,27 @@ class Parser:
         #print('obj', tender_objects_parsed_data)
         tender_conditions_parsed_data = self.get_tender_conditions_parsed_data(
             tender_conditions, main_report_parserd_data['conditions']['publication_date'])
-        print(tender_conditions_parsed_data)
+        #print(tender_conditions_parsed_data)
         #conditions_parserd_data = self.get_conditions_parsed_data(conditions)
 
-        for num, lot_div in enumerate(lots_divs, start=1):
-            currency = self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Валюта')
-            if not currency:
-                currency = self.get_currency_from_docs_container(data_html)
-            lots.append({
-                'number': num,
-                'name': self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Предмет договора'),
-                'status': self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Текущий статус'),
-                'customer': self.find_lot_row(
-                    lot_div, 'Заказчики, с которыми заключается договор', 'Наименование заказчика'
-                ),
-                'sub_close_date': self.clear_date_str(
-                    self.find_lot_row(lot_div,
-                                      'Этапы закупочной процедуры', 'Дата и время окончания срока приема заявок')
-                ),
-                'price': self.clear_double_data_str(
-                    self.find_lot_row(lot_div, 'Цена договора и требования к обеспечению', 'Начальная цена')
-                ),
-                'guarantee_app': self.clear_double_data_str(
-                    self.find_lot_row(
-                        lot_div, 'Цена договора и требования к обеспечению', 'Размер обеспечения заявки (в рублях)'
-                    )
-                ),
-                'payment_terms': self.find_lot_row(
-                    lot_div, 'Условия договора', 'Условия оплаты и поставки товаров/выполнения работ/оказания услуг'),
-                'quantity': self.find_lot_row(
-                    lot_div, 'Условия договора',
-                    'Количество поставляемого товара/объем выполняемых работ/оказываемых услуг'
-                ),
-                'delivery_place': self.get_lot_delivery_place(lot_div),
-                'order_view_date': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время вскрытия заявок')),
-                'scoring_date': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата подведения итогов')
-                ),
-                'scoring_datetime': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Подведение итогов не позднее')
-                ),
-                'publication_date': self.clear_date_str(
-                    ''.join(
-                        data_html.find(
-                            'div', class_='block__docs_container').find('p', class_='datePublished').findAll(text=True)
-                    ),
-                ),
-                'trade_date': self.clear_date_str(
-                    self.find_lot_row(lot_div, 'Этапы закупочной процедуры', 'Дата и время проведения')
-                ),
-                'currency': currency,
-                'positions': self.get_lot_positions(lot_div),
-                'okpd2': self.get_lot_okpd_okved(lot_div, okpd2=True),
-            })
-        return lots
+        
+        tender = {
+            'id': item['id'],
+            'number': item['number'],
+            'name': main_report_parserd_data['name'],
+            'type': main_report_parserd_data['type'],
+            'status': main_report_parserd_data['status'],
+            'customer': main_report_parserd_data['customer'],
+            'price': item['price'],
+            'delivery_place': tender_conditions_parsed_data['delivery_place'],
+            'delivery_terms': tender_conditions_parsed_data['delivery_terms'],
+            'positions': tender_objects_parsed_data,
+            'sub_start_date': main_report_parserd_data['conditions']['sub_start_date'],
+            'sub_close_date': main_report_parserd_data['conditions']['sub_close_date'],
+            'scoring_date': main_report_parserd_data['conditions']['score_date'],
+            'sub_order': main_report_parserd_data['conditions']['info'],
+            'fio': main_report_parserd_data['fio'],
+            'publication_date': main_report_parserd_data['conditions']['publication_date'],
+            'attachments': tender_conditions_parsed_data['attachments'],
+        }
+        return tender

@@ -1,0 +1,96 @@
+/*item*/
+
+/*radiogroup*/
+a.radioUnselected{
+/*  background-image: url('/img/apx/icon/set_v1/item/tabUnselected.png');*/
+  background-repeat: no-repeat;
+  background-position: left center;
+/*  margin-right: 4px;
+  margin-left: 0px;
+  margin-top: 0px;
+  padding-bottom: 0px;
+  padding-top: 0px;
+  padding-left: 0px;
+  padding-right: 0px;*/
+  text-decoration: none; 
+  color: gray;
+  white-space: nowrap;
+  cursor: default;
+ /* font-weight: bold;*/
+}
+
+/*nevydelennaya zakladka pri navedenii*/
+a.radioSelected{
+ /* background-image: url('/img/apx/icon/set_v1/item/tabSelected.png');*/
+   background-repeat: no-repeat;
+  background-position: left center;
+/*  margin-right: 4px;
+  margin-left: 0px;
+  margin-top: 0px;
+  padding-bottom: 0px;
+  padding-top: 0px;
+  padding-left: 0px;
+  padding-right: 0px;*/
+  text-decoration: none; 
+  color: black;
+  white-space: nowrap;
+  cursor: default;
+ /* font-weight: bold;*/
+}
+
+table.radiogroup{
+ /* background-color: white;*/
+ /* border-style: solid 1px #A0A0A0;*/
+ /* border-right: solid 1px #7f9db9;
+  border-bottom: solid 1px #7f9db9;
+  border-top: solid 1px #7f9db9;
+  border-left: solid 1px #7f9db9;*/
+  table-layout:auto;
+}
+
+
+/* Item  MULTI-FILE */
+.itmMultiFile {
+  border: 0px solid black;
+  width: 100%;
+}
+
+.itmInvis {
+  display: none;  
+}
+
+.itmMultiFile td {
+  border-width: 0px;
+  padding: 1px;
+}
+
+/* PERCENT GRAPH*/
+.pcntBg{
+  height: 14px; 
+  background-color: #D7D7D7;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(170, 170, 170) rgb(255, 255, 255) rgb(255, 255, 255) rgb(170, 170, 170);   
+}
+
+.pcntAct{
+  height: 14px; 
+  border-width: 0; 
+  background: #559999;
+}
+
+.pcntLabel{
+  position: relative;
+  top: -14px; 
+  text-align: center; 
+  color: white;
+}
+
+
+/* ƒл€ стандартного апексового Popup LOV (чтобы был похож на наш)
+.popup_lov {
+  color: black;
+  background-color: white;
+  border: 1px solid silver;
+}
+*/

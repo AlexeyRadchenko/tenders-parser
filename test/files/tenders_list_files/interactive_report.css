@@ -1,0 +1,134 @@
+.a-IRR-table th {
+  background: none;
+  background-color: #5EA97C; 
+  vertical-align: middle;
+}
+
+.a-IRR-table th:hover {
+  background: none;
+  background-color: #6FBA8D !important; 
+}
+
+.a-IRR-table th.is-active {
+  background: none;
+  background-color: #6FBA8D !important; 
+}
+
+.a-IRR-table tr:hover td {
+  background-color: #CAEEDA !important; 
+}
+
+.a-IRR-headerLink {
+  background: none;
+  color: #FFFFFF !important; 
+  white-space: normal;
+}
+
+.a-IRR-headerLabel {
+  background: none;
+  color: #FFFFFF !important; 
+  white-space: normal;
+}
+
+
+.a-Icon {
+  background: none;
+  color: #222222 !important; 
+}
+
+/* line 271, ../../scss/core/IRR.scss */
+.a-IRR-sortWidget-search > .a-IRR-sortWidget-searchField:focus,
+.a-IRR-sortWidget-search > .a-IRR-sortWidget-searchField[type="text"]:focus {
+  box-shadow: 0 0 0 1px #5EA97C inset;
+}
+
+/* line 306, ../../scss/core/IRR.scss */
+.a-IRR-sortWidget-row:focus {
+  box-shadow: 0 0 0 1px #5EA97C inset;
+}
+
+/* line 323, ../../scss/core/IRR.scss */
+.a-IRR-button.a-IRR-sortWidget-button:focus {
+  box-shadow: 0 0 0 1px #5EA97C inset, 0 0 0 1px #5EA97C, 0 0 2px 2px rgba(70, 150, 252, 0.5);
+}
+
+/* line 484, ../../scss/core/IRR.scss */
+.a-IRR-controlsLabel:focus {
+  -webkit-box-shadow: 0 0 0 1px #5EA97C inset;
+  -moz-box-shadow: 0 0 0 1px #5EA97C inset;
+  box-shadow: 0 0 0 1px #5EA97C inset;
+}
+
+/* line 543, ../../scss/core/IRR.scss */
+.a-IRR-controls .a-IRR-controlsCheckbox:focus + .a-IRR-controlsCheckboxLabel {
+  border-color: #5EA97C;
+}
+
+/* line 612, ../../scss/core/IRR.scss */
+.a-IRR-reportSummary-label:focus, .a-IRR-reportSummary-label:focus .a-IRR-reportSummary-icon {
+  -webkit-box-shadow: 0 0 0 1px #5EA97C inset;
+  -moz-box-shadow: 0 0 0 1px #5EA97C inset;
+  box-shadow: 0 0 0 1px #5EA97C inset;
+}
+
+/* line 830, ../../scss/core/IRR.scss */
+.a-IRR-headerLink:focus {
+  box-shadow: 0 0 0 2px #5EA97C inset;
+}
+
+/* line 951, ../../scss/core/IRR.scss */
+.a-IRR-button:focus {
+  box-shadow: 0 0 0 1px #5EA97C inset, 0 0 0 1px #5EA97C, 0 0 2px 2px rgba(70, 150, 252, 0.5);
+}
+
+/* line 962, ../../scss/core/IRR.scss */
+.a-IRR-button.a-IRR-button--pagination:hover {
+  background-color: #5EA97C;
+}
+
+/* line 1060, ../../scss/core/IRR.scss */
+.a-IRR-singleRow-link:focus {
+  box-shadow: 0 0 0 2px #5EA97C inset;
+}
+
+/* line 1150, ../../scss/core/IRR.scss */
+.a-IRR-col-value:focus {
+  box-shadow: 0 0 0 1px #5EA97C inset;
+}
+
+
+/* line 27, ../../scss/theme/standard/IRR.scss */
+.a-IRR-search-field:focus {
+  border-color: #5EA97C;
+  -webkit-box-shadow: 0 0 0 1px #5EA97C inset, -2px 0 0 #5EA97C inset, 2px 0 0 #5EA97C inset, 0 0 2px 0 rgba(70, 150, 252, 0.5);
+  -moz-box-shadow: 0 0 0 1px #5EA97C inset, -2px 0 0 #5EA97C inset, 2px 0 0 #5EA97C inset, 0 0 2px 0 rgba(70, 150, 252, 0.5);
+  box-shadow: 0 0 0 1px #5EA97C inset, -2px 0 0 #5EA97C inset, 2px 0 0 #5EA97C inset, 0 0 2px 0 rgba(70, 150, 252, 0.5);
+}
+
+/* line 41, ../../scss/theme/standard/IRR.scss */
+.a-IRR-selectList:focus {
+  border-color: #5EA97C;
+  -webkit-box-shadow: 0 0 0 1px #5EA97C, 0 0 2px 0 rgba(70, 150, 252, 0.5);
+  -moz-box-shadow: 0 0 0 1px #5EA97C, 0 0 2px 0 rgba(70, 150, 252, 0.5);
+  box-shadow: 0 0 0 1px #5EA97C, 0 0 2px 0 rgba(70, 150, 252, 0.5);
+}
+
+
+/* line 43, ../../scss/theme/standard/Menu.scss */
+.a-MenuBar-item.is-focused {
+  -webkit-box-shadow: 0 0 0 2px #5EA97C inset;
+  -moz-box-shadow: 0 0 0 2px #5EA97C inset;
+  box-shadow: 0 0 0 2px #5EA97C inset;
+}
+
+/* line 94, ../../scss/theme/standard/Menu.scss */
+.a-Menu .a-Menu-item.is-focused,
+.a-Menu .a-Menu-item.is-expanded {
+  background-color: #5EA97C;
+  color: #FFF;
+}
+
+.a-IRR-table td {
+  color: black;
+}
+

@@ -1,0 +1,128 @@
+img { 
+  /*behavior: url("/img/apx/htc/iepngfix.htc");*/
+}
+
+.toolTipOver{
+  -moz-binding:url("../htc/bindings.xml#tooltip_over.htc");
+  behavior: url("../htc/tooltip_over.htc");
+}
+
+.toolTipOverDynamic{
+  -moz-binding:url("../htc/bindings.xml#tooltip_over_dynamic.htc");
+  behavior: url("../htc/tooltip_over_dynamic.htc");
+}
+
+.toolTipClick{
+  -moz-binding:url("../htc/bindings.xml#tooltip_click.htc");
+  behavior: url("../htc/tooltip_click.htc");
+}
+
+div.toolTip {
+  position:absolute;
+/*  overflow:auto;*/
+}
+
+div.scrollableDiv{
+  overflow:auto;
+  padding-left:4px;
+  color: black;
+  vertical-align:middle;
+  font-family: arial;
+  font-size:9pt;
+}
+
+.innerTable{
+  width:100%
+}
+
+/*  заголовок   */
+.trHeader{
+  height:17px;
+}
+
+td.tdHeaderLeft{
+  width:4px;
+  cursor:move;
+  background: url(../ico/tooltip/h_left.gif) no-repeat center bottom
+}
+
+td.tdHeaderCenter{
+  cursor:move;
+  text-align:center;
+  background: url(../ico/tooltip/h_center.gif) repeat-x center bottom
+}
+
+td.tdHeaderCenter *{
+  cursor:default;
+}
+
+td.tdHeaderRight{
+  width:16px;
+  background: url(../ico/tooltip/h_right.gif) no-repeat center bottom;
+}
+
+.tdHeaderRight div{
+  margin-top:8px;
+  width:14px;
+  height:14px;
+  cursor:pointer;
+  background: url(../ico/tooltip/close.gif) no-repeat right center;
+}
+
+img.imgFreese{
+  cursor:pointer;
+}
+/*  заголовок   */
+
+
+/*  центр   */
+.trMiddle .innerTable{
+  /*border:1px solid #e9e7a1;*/
+  border:1px dashed black;
+  border-top:none;
+  border-bottom:none;
+/*
+  border-left:1px solid #e9e7a1;
+  border-right:1px solid #e9e7a1;
+  border-top:1px solid #e9e7a1;
+  */
+  /*background-color:#f1f0df;*/
+  background-color:white;
+}
+/*  центр   */
+
+
+/*  низ */
+.trFooter{
+  height:12px;
+}
+
+.trFooter td{
+  height:12px;
+}
+
+.tdFooterCenter div{
+  height:12px;
+}
+
+td.tdFooterRight{
+  width:12px;
+  vertical-align:bottom;
+}
+
+td.tdFooterRight div{
+  cursor:se-resize;
+  width:12px;
+  height:12px;
+  background: url(../ico/tooltip/resize.gif) no-repeat scroll right bottom;
+  background-repeat:no-repeat;
+}
+
+.trFooter .innerTable{
+  /*border:1px solid #e9e7a1;*/
+  border:1px dashed black;
+  border-top:none;
+  /*background-color:#f1f0df;*/
+  background-color:white;
+}
+/*  низ */

@@ -1,0 +1,105 @@
+#lovAjax div.tableContainerScroll {
+/*    height: expression(calcSize(this)); */
+    height: 185px;
+    overflow-x: auto;
+    overflow-y: auto;
+    BORDER: #777777 1px solid; 
+    BORDER-TOP: 1px solid #AACCFF;
+/*    BORDER-LEFT: 2px solid #AAAAAA;*/
+}
+
+/*by zen*/
+/*thead.tableHeaderScroll tr{*/
+/*    position:relative; */
+/*    top: expression(offsetParent.scrollTop);*/
+/*}*/
+
+TABLE.lovTable {
+/*	BORDER-RIGHT: #999999 1px solid; 
+	BORDER-LEFT: #cccccc 1px solid; */
+	BORDER-BOTTOM: #999999 1px solid; 
+/*  BACKGROUND-COLOR: #faffff; */
+  BACKGROUND-COLOR: #ffffff; 
+	WIDTH: 100%; 
+}
+
+TABLE.lovTable TH {
+	BORDER-RIGHT: #999999 1px solid; 
+	BORDER-TOP: #aaaaff 1px solid;  
+	VERTICAL-ALIGN: middle; 
+	BORDER-LEFT: #aaaaff 1px solid; 
+	BORDER-BOTTOM: #8097f7 1px solid; 
+/*	background-image: url(/img/apx/icon/set_v1/lov/header.gif); */
+	BACKGROUND-COLOR: #cfe0f1; text-align: left;
+	cursor:default; PADDING-TOP: 0px; PADDING-BOTTOM: 0px;
+}
+
+
+TABLE.lovTable TR {
+  height:17px
+}
+
+
+TABLE.lovTable TD {
+	BORDER-RIGHT: #cccccc 1px solid; 
+	BORDER-TOP: #f5ffff 0px solid; 
+	BORDER-LEFT: #ffffff 0px solid; 
+/*	BORDER-BOTTOM: #cccccc 1px solid;   */
+	BORDER-BOTTOM: #d0d0ee 1px solid;
+	PADDING-LEFT: 4px
+}
+
+.current {
+  background-color: #DDFFDD; /*#EFFFE7;*/
+/*  background-image: url(/img/apx/icon/set_v1/lov/cur_val.gif); */
+}
+
+TR.notSelectable {font-style:italic; cursor:default}
+TD.notSelectable {font-style:italic; cursor:default}
+
+TABLE.headerCell {
+  position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+TABLE.headerCell TR {cursor:default;}
+TABLE.headerCell TD {
+  BORDER: #000000 0px solid; 
+  FONT-WEIGHT: bold; 
+  COLOR: #000088;
+}
+
+
+.extraButton {background-color:#f0fcf5; cursor:pointer;} 
+
+
+.selRow{
+   cursor:pointer;
+}
+
+.unselRow{
+   cursor:default;
+   font-style:italic;
+   /*font-weight:bold;*/
+   color:#667766; /* #555555 */
+}
+
+
+TABLE.lovFooter {
+  border:0px;
+  padding: 0px;
+  padding-top:1; 
+  width:100%;
+  border-collapse:collapse;
+  border-left:#777777 1px solid;
+  border-right:#777777 1px solid;
+  border-bottom:#777777 1px solid;
+}
+
+
+TABLE.lovFooter TD {
+  padding-left:4; 
+  border-right: #CCCCCC 1px solid;
+  background-color:#FFFFFF;
+}

@@ -1,0 +1,66 @@
+div.tableContainerScroll {
+    height: 300px;
+    /*bad for resize oO*//*h_eight: expression(calcSize(this));*/
+    overflow-y: auto;
+    border: 1px solid #CFE0F1;
+}
+div.tableContainerRegionScroll {
+    height: 300px;
+    /*bad for resize oO*//*h_eight: expression(calcSize(this));*/
+    overflow-y: auto;
+    border: 0px solid #CFE0F1;
+}
+table.tableFixedScroll {
+    /*bad for resize oO*//*w_idth: 100%;*/
+    border-collapse:collapse;
+}
+
+thead.tableHeaderScroll tr{
+/*    position:relative; */
+/*    top: expression(offsetParent.scrollTop);*/
+}
+
+th.tdScrollHeader  {
+    background:url('../ico/region_scroll/white.gif') repeat-y;
+    background-color: #5ea97c; /*#CFE0F1;*/
+/*     color:#336699; */
+    color:white !important;
+    padding:2px 5px;
+    white-space:nowrap;
+    vertical-align:top;
+}
+
+.thInactive th.tdScrollHeader  {
+    background:url('../ico/region_scroll/white.gif') repeat-y;
+    background-color:#f0f0f0;
+    color:white !important;
+    padding:2px 5px;
+    white-space:nowrap;
+    vertical-align:top;
+}
+
+td.tdScrollData {
+    /*padding:2px 5px;*/
+    padding-left:2px;
+    padding-right:2px;
+    border: 1px solid #CFE0F1;
+    border-left: none;
+    vertical-align:top;
+    /*border-bottom: none;*/
+}
+
+.tableAfterScroll{
+    width:100%;
+    border: 1px solid #CFE0F1;
+    border-top: none;
+    padding-right:5px;
+}
+
+/*for resize*/
+.tableContainerScroll{
+    overflow:auto;
+}
+/*for IE. with border-collapse:collapse and tr:last:hidden border was invisible*/
+.tableFixedScroll{
+    border-bottom: 1px solid #CFE0F1;
+}

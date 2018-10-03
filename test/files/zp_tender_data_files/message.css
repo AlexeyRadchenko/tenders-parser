@@ -1,0 +1,114 @@
+.messageBackground {
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:100;
+  background-color:gray;
+  opacity:0.2;
+  filter:alpha(opacity=20);
+}
+.calendar{
+  z-index:305;
+}
+.messageTitle{
+  color:white;
+  padding:3px;
+  padding-bottom:0px;
+  font-weight:bold;
+  cursor:default;
+  white-space:nowrap;
+  background: url('../ico/message/background/gradHC.png') repeat-x top left;
+  height: 27px;
+}
+
+.messageContent{
+  background-repeat:no-repeat;
+  background-position:10px 10px;
+  white-space:nowrap;
+}
+
+.messageNonIcoContent{
+  width:100%;
+}
+
+.messageIcoContent{
+  width:100%;
+}
+
+.messageIco {
+  width:40px;
+  vertical-align:top;
+}
+
+.messageButtons{
+  padding:3px;
+  text-align:center;
+  vertical-align:bottom;
+  white-space:nowrap;
+}
+
+.messageButtons input{
+  padding-left:4px;
+  padding-right:4px;
+  margin-left:4px;
+  margin-right:4px;
+}
+
+.messageButton{
+  padding-left:4px;
+  padding-right:4px;
+}
+
+.messageWindow {
+  position:absolute;
+  z-index:101;
+  white-space:nowrap;
+  border-collapse:collapse;
+  padding:0px;
+  margin:0px;
+}
+.messageActiveButton{
+}
+
+.messageInActiveButton{
+}
+
+.messageTitleL {
+  background: url('../ico/message/background/gradHL.png') repeat-x top left;
+}
+ 
+.messageTitleR {
+  background: url('../ico/message/background/gradHR.png') repeat-x top right;
+}
+ 
+.messageContentL {
+  background: url('../ico/message/background/gradContL.png') repeat-y top left;
+}
+ 
+.messageContentR {
+  background: url('../ico/message/background/gradContR.png') repeat-y top right;
+}
+ 
+.messageFL {
+  background: url('../ico/message/background/gradFL.png') repeat-x top right;
+}
+ 
+.messageFC {
+  background: url('../ico/message/background/gradFC.png') repeat-x top right;
+  height:5px;
+}
+ 
+.messageFR {
+  background: url('../ico/message/background/gradFR.png') repeat-x top right;
+}
+
+.messageContentL,.messageContent,.messageContentR,.messageButtons{
+  background-color:#EAEAEA;
+}
+.messageTitleL,.messageTitleR{
+  width:4px;
+}
+.messageVertical input{
+  width:110px;
+  margin-bottom:2px;
+}
