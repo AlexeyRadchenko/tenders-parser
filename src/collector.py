@@ -89,9 +89,11 @@ class Collector:
             #if not dbmodel or dbmodel=[''] != item[]
             print(item['id'])
         else:
-            print(item)
-            tender_data_html = self.http.get_tender_data('https://etp.tatneft.ru/pls/tzp/f?p=220:2155:8588935612340::::P2155_REQ_ID,P2155_PREV_PAGE:2075471700021,562') #self.http.get_tender_data(item['link'])
+            print(item) # https://etp.tatneft.ru/pls/tzp/f?p=220:2155:26439038199114::::P2155_REQ_ID,P2155_PREV_PAGE:2076327480021,562
+            tender_data_html = self.http.get_tender_data('https://etp.tatneft.ru/pls/tzp/f?p=220:2155:26439038199114::::P2155_REQ_ID,P2155_PREV_PAGE:2076327480021,562') # 'https://etp.tatneft.ru/pls/tzp/f?p=220:2155:8588935612340::::P2155_REQ_ID,P2155_PREV_PAGE:2075471700021,562'
             tender_data = self.parser.get_tender_data(tender_data_html, item)
+            print(tender_data['positions'])
+            # 'https://etp.tatneft.ru/pls/tzp/f?p=220:2155:8588935612340::::P2155_REQ_ID,P2155_PREV_PAGE:2075471700021,562'
         """   
         tender_data_html = self.http.get_tender_data(item['link'])
         tender_lots = self.parser.get_tender_lots_data(tender_data_html)

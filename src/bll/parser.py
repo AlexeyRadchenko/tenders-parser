@@ -113,6 +113,8 @@ class Parser:
         for i, row in enumerate(table_rows):
             row_data = row.find('td').findAll(text=True)
             #print(row_data)
+            if row_data and row_data[0] == 'Товары, работы, услуги':
+                break
             if row_data and row_data[0].strip() == search_row and search_row == 'Условия проведения:':
                 return self.find_conditions_main_report(table_rows[i + 1].find('table').find_all('tr'))
             elif row_data and row_data[0].strip() == search_row:
@@ -133,17 +135,21 @@ class Parser:
         return main_report
 
     def get_tender_objects_parsed_data(self, html):
-        table_rows = html.find_all('tbody')[1].find_all('tr')
-        #print(html.find('tbody'))
+        try:
+            table_rows = html.find_all('tbody')[1].find_all('tr')
+        except IndexError:
+            table_rows = html.find('tbody').find_all('tr')
         items = []
         for row in table_rows:
             row_values = row.find_all('td')
+            if row_values[0].text != '1':
+                return None
             items.append({
                 'num': row_values[0].text,
                 'name': row_values[1].text,
                 'quantity': row_values[2].text,
                 'measure': row_values[3].text,
-                'notice': row_values[4].text
+                'notice': row_values[4].text if len(row_values) >= 5 else None,
             })
         return items
 
@@ -189,7 +195,7 @@ class Parser:
         main_report = tables[2]
         tender_objects = other_reports_tables[0]
         tender_conditions = other_reports_tables[1]
-        conditions = other_reports_tables[2]
+        #conditions = other_reports_tables[2]
 
         main_report_parserd_data = self.get_main_report_parsed_data(main_report)
         #print('main_data', main_report_parserd_data)
