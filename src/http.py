@@ -4,11 +4,12 @@ from bs4 import BeautifulSoup
 
 
 class Http:
-    def __init__(self, proxy=None):
+    def __init__(self, proxy=None, first_init=True):
         if proxy and proxy.get('enabled'):
             self.proxy = proxy
         else:
             self.proxy = None
+        self.first_init = first_init
 
     source_url_list = [
         'http://www.uralchem.ru/purchase/tenders/',
@@ -28,7 +29,7 @@ class Http:
             'div', {'data-id': data_id}
         ).find('ul', {'class': 'pagination-list'}).find('li', {'class': 'next'})
 
-    def get_tender_list(self):
+    def get_tender_list(self, arch_tenders_quantity=5):
         """генератор списков тендеров"""
         for i, url in enumerate(self.source_url_list):
             for tenders_type in ['open', 'close']:
@@ -58,16 +59,22 @@ class Http:
                         items_div = html.find('div', {'data-id': data_id})
                         if items_div:
                             items_data_list = items_div.find_all('div', {'class': 'tenders-item'})
-                            yield items_data_list, i, url, params_key, params[params_key]
+                            yield items_data_list, i, url
                             if not self.next_page_exist(html, data_id):
                                 break
+                            elif not self.first_init and tenders_type == 'close':
+                                if params[params_key] <= arch_tenders_quantity:
+                                    params[params_key] += 1
+                                else:
+                                    break
                             else:
                                 params[params_key] += 1
                         else:
                             break
                     elif res.status_code == 500:
                         break
-
+        if self.first_init:
+            self.first_init = False
 
     def get_tender_data(self, url):
         """данные отдельного тендера"""

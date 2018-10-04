@@ -75,7 +75,7 @@ class Collector:
         if dbmodel is None or dbmodel['status'] != item['status']:
         #if True:
             model = self.mapper.map(item)
-            #print(model)
+            print(model['href'])
 
             short_model = {
                 '_id': model['id'],

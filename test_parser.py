@@ -8,19 +8,19 @@ class Unittest(unittest.TestCase):
 
     def setUp(self):
         self.parser = Parser(base_url='')
-        self.path_tender_list = 'test/files_2/tenders_list.html'
+        self.path_tender_list = 'test/files/tenders_list.html'
 
     def test_get_part_data(self):
         with open(self.path_tender_list) as data_file:
             html = BeautifulSoup(data_file, 'lxml')
         html_items_list = html.find('div', {'data-id': 'tab-1'}).find_all('div', {'class': 'tenders-item'})
         self.assertEqual(10, len(html_items_list))
-        result = self.parser.get_part_data(html_items_list, 0, 'http://www.uralchem.ru/purchase/tenders/', 'PAGEN_1', 1)
+        result = self.parser.get_part_data(html_items_list, 0, 'http://www.uralchem.ru/purchase/tenders/')
         self.assertEqual(10, len(result))
         #print(result[0])
         true_result = {
             'name': 'Уведомление\n о проведении конкурентной процедуры в форме запроса предложений с целью\n заключения договора на разработку рабочей документации на ремонт здания\n отделения сложных минеральных удобрения цеха аммофоса №2 по Заключению №\n А-ЗС-64747-17 АО «Воскресенские минеральные удобрения»',
-            'link': 'http://www.uralchem.ru/purchase/tenders/?PAGEN_1=1',
+            'link': 'http://www.uralchem.ru/purchase/tenders/',
             'customer': '“АО ХК Уралхим”',
             'status': 1,
             'org': 'АО «Воскресенские минеральные удобрения»',

@@ -88,7 +88,7 @@ class Parser:
         #print(attachments)
         return attachments
 
-    def get_part_data(self, data_list, tender_type, url, param_key, param_value):
+    def get_part_data(self, data_list, tender_type, url):
         """парсим строки пришедшие в запросе возвращаем список первичных данных"""
         item_list = []
         for item_data in data_list:
@@ -106,6 +106,6 @@ class Parser:
                 'publication_date': self.clear_date_str(
                     item_data.find('div', {'class': 'item-data'}).findAll(text=True)[1]),
                 'attachments': self.get_attachments(item_data),
-                'link': '{}?{}={}'.format(url, param_key, param_value)
+                'link': url
             })
         return item_list
