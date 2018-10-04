@@ -18,11 +18,12 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
-        """
+
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
                                           mongodb['collection'])
+        """
         self.rabbitmq = RabbitMqProvider(rabbitmq['host'],
                                          rabbitmq['port'],
                                          rabbitmq['username'],
@@ -85,41 +86,38 @@ class Collector:
         """
         # Получение HTML страницы с данными тендера
         if not item.get('link'):
-            #dbmodel = self.get_db_model_for_rd_item(item['id'])
-            #if not dbmodel or dbmodel=[''] != item[]
-            print(item['id'])
+            dbmodel = self.get_db_model_for_rd_item(item['id'])
+            if dbmodel:
+                dbmodel_time = Tools.get_utc_epoch(
+                    dbmodel['submissionStartDateTime']) if dbmodel.get('submissionStartDateTime') else 0
+                item_time = Tools.get_utc_epoch(item['sub_start_date'])
+                if dbmodel_time <= item_time:
+                    item['id'] = dbmodel['_id']
+                    item['number'] = dbmodel['number']
+                    item['link'] = dbmodel['link']
+                    tender_data_html = self.http.get_tender_data(item['link'])
+                    tender_data = self.parser.get_tender_data(tender_data_html, item)
+            else:
+                return None
         else:
-            print(item) # https://etp.tatneft.ru/pls/tzp/f?p=220:2155:26439038199114::::P2155_REQ_ID,P2155_PREV_PAGE:2076327480021,562
-            tender_data_html = self.http.get_tender_data('https://etp.tatneft.ru/pls/tzp/f?p=220:2155:26439038199114::::P2155_REQ_ID,P2155_PREV_PAGE:2076327480021,562') # 'https://etp.tatneft.ru/pls/tzp/f?p=220:2155:8588935612340::::P2155_REQ_ID,P2155_PREV_PAGE:2075471700021,562'
+            tender_data_html = self.http.get_tender_data(item['link'])
             tender_data = self.parser.get_tender_data(tender_data_html, item)
-            print(tender_data['positions'])
-            # 'https://etp.tatneft.ru/pls/tzp/f?p=220:2155:8588935612340::::P2155_REQ_ID,P2155_PREV_PAGE:2075471700021,562'
-        """   
-        tender_data_html = self.http.get_tender_data(item['link'])
-        tender_lots = self.parser.get_tender_lots_data(tender_data_html)
-        multilot = True if len(tender_lots) > 1 else False
-        org = self.parser.get_org_data(tender_data_html)
-        attachments = self.parser.get_attachments(tender_data_html)
-        #print(item, tender_lots, org, attachments, multilot)
 
-        for lot in tender_lots:
-            tender_lot_id = '{}_{}'.format(item['number'], lot['number'])
-            #dbmodel = self.repository.get_one(tender_lot_id)
-            #if dbmodel is None or dbmodel['status'] != lot['status']:
-            if True:
-                model = self.mapper.map(item, multilot, org, attachments, lot, tender_lot_id)
-                #print(model)
-                
-                short_model = {
-                    '_id': model['id'],
-                    'status': model['status']
-                }
+        model = self.mapper.map(tender_data)
+        print(model)
 
-                # добавляем/обновляем в MongoDB
-                
-                self.repository.upsert(short_model)
-                print('Upserted in MongoDB')
+        short_model = {
+            '_id': model['id'],
+            'number': model['number'],
+            'link': model['href'],
+            'submissionStartDateTime': model['submissionStartDateTime'],
+        }
 
-                # отправляем в RabbitMQ
-                self.rabbitmq.publish(model)
-                print('Published to RabbitMQ')"""
+        # добавляем/обновляем в MongoDB
+
+        self.repository.upsert(short_model)
+        print('Upserted in MongoDB')
+        """
+        # отправляем в RabbitMQ
+        self.rabbitmq.publish(model)
+        print('Published to RabbitMQ')"""

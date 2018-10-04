@@ -36,7 +36,7 @@ class Mapper:
     def get_tender_search(item):
         return '{} {}'.format(
             item['number'] if item['number'] else '',
-            item['name'] if item['name'] else lot['name'],
+            item['name'] if item.get('name') else item['name'],
         )
 
     def get_attachments(self, files):
@@ -147,6 +147,8 @@ class Mapper:
         #     Иной многолотовый способ = 16,
         #     Сообщение о заинтересованности в проведении открытого конкурса = 17,
         #     Иной однолотовый способ = 18
+        ['Тендер', 'Запрос предложений', 'Редукцион']
+
         """
 
         if org_form in ['Аукцион на повышение', 'Аукцион на понижение']:
@@ -155,7 +157,7 @@ class Mapper:
             return 14
         elif org_form in ['Запрос цен']:
             return 16
-        elif org_form in ['Попозиционные торги']:
+        elif org_form in ['Тендер', 'Редукцион']:
             return 18
         elif org_form in ['Запрос котировок']:
             return 4
@@ -185,21 +187,20 @@ class Mapper:
         т.к. на площадке присутствуют не все виды, то 
         задействованы только присутствующие
 
-            status[
-            , , , , , , , ]
+        ['Опубликован, прием предложений', 'Прием предложений завершен', 'Поставщик выбран', 'Раунд завершен', 'Торги не состоялись', 'Торги приостановлены']
         """
 
         if string is None or string.strip() == '':
             return 0
-        elif string in ['Прием заявок на участие', ]:
+        elif string in ['Опубликован, прием предложений']:
             return 1
-        elif string in ['Подведение итогов', 'Вскрытие конвертов', 'Рассмотрение первых частей заявок']:
+        elif string in ['Прием предложений завершен', 'Раунд завершен']:
             return 2
         elif string in ['Заключение договора', 'Проведение аукциона']:
             return 7
-        elif string in ['Архив']:
+        elif string in ['Поставщик выбран']:
             return 3
-        elif string == 'Процедура отменена':
+        elif string == ['Торги не состоялись', 'Торги приостановлены']:
             return 4
 
     @staticmethod
@@ -343,14 +344,14 @@ class Mapper:
                     ).add_field(Field(
                         name='Phone',
                         displayName='Телефон',
-                        value=org['phone'],
+                        value=None,
                         type=FieldType.String,
                         modifications=[]
                         )
                     ).add_field(Field(
                         name='Email',
                         displayName='Электронная почта',
-                        value=org['email'],
+                        value=None,
                         type=FieldType.String,
                         modifications=[Modification.Email]
                         )

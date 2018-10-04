@@ -218,7 +218,8 @@ class Parser:
             'delivery_place': tender_conditions_parsed_data['delivery_place'],
             'delivery_terms': tender_conditions_parsed_data['delivery_terms'],
             'positions': tender_objects_parsed_data,
-            'sub_start_date': main_report_parserd_data['conditions']['sub_start_date'],
+            'sub_start_date': self.tools.get_utc_epoch(
+                item['sub_start_date']) if item['sub_start_date'] else main_report_parserd_data['conditions']['sub_start_date'],
             'sub_close_date': main_report_parserd_data['conditions']['sub_close_date'],
             'scoring_date': main_report_parserd_data['conditions']['score_date'],
             'sub_order': main_report_parserd_data['conditions']['info'],

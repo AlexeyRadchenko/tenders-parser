@@ -48,7 +48,8 @@ class Tools:
                                      '%d.%m.%Y')
             return date
 
-    def get_utc_epoch(self, date_string, time_delta=3):
+    @staticmethod
+    def get_utc_epoch(date_string, time_delta=3):
         """
         Парсинг дат и перевод их к виду UNIX EPOCH
         """

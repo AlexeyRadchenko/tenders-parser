@@ -22,6 +22,9 @@ class MongoRepository:
         self.collection.update_one({
             '_id': shortmodel['_id']
         }, {
-            '$set': {'status': shortmodel['status']}
+            '$set': {
+                'number': shortmodel['number'],
+                'link': shortmodel['link'],
+                'submissionStartDateTime': shortmodel['submissionStartDateTime']}
         }, True)
 
