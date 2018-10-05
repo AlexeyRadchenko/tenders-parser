@@ -45,8 +45,7 @@ class Mapper:
             attachments.append({
                 'displayName': file['display_name'],
                 'href': file['url'],
-                'publicationDateTime': self.tools.get_utc_epoch(
-                    file['publication_date'][0], file['publication_date'][1]),
+                'publicationDateTime': self.tools.get_utc_epoch(file['publication_date'][0]),
                 'realName': file['real_name'],
                 'size': file['size']
             })
@@ -92,14 +91,14 @@ class Mapper:
                 'name': 'ЭТП Татнефть',
             },
             # Дата публикации тендера UNIX EPOCH (UTC)
-            'publicationDateTime': self.tools.get_utc_epoch(*item['publication_date']),
+            'publicationDateTime': self.tools.get_utc_epoch(item['publication_date'][0]),
             'region': 16,
             # Дата окончания подачи заявок UNIX EPOCH (UTC)
             'submissionCloseDateTime': self.tools.get_utc_epoch(
-                *item['sub_close_date']) if item.get('sub_close_date') else None,
+                item['sub_close_date'][0]) if item.get('sub_close_date') else None,
             # Дата начала подачи заявок UNIX EPOCH (UTC)
             'submissionStartDateTime': self.tools.get_utc_epoch(
-                *item['sub_start_date']) if item.get('sub_start_date') else None,
+                item['sub_start_date'][0]) if item.get('sub_start_date') else None,
             'tenderSearch': self.get_tender_search(item),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
@@ -115,13 +114,13 @@ class Mapper:
                 'reason': ''
             },
             'futureNumber': None,
-            'scoringDateTime': self.tools.get_utc_epoch(*item['scoring_date']) if item.get('scoring_date') else None,
+            'scoringDateTime': self.tools.get_utc_epoch(item['scoring_date'][0]) if item.get('scoring_date') else None,
             'biddingDateTime': None,
             'preference': [],
             'group': None,
         }
 
-        model['json'] = self.get_json(model)
+        model['json'] = self.get_json(model, item)
         return model
 
     def get_placingway(self, org_form):

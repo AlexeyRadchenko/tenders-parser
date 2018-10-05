@@ -149,7 +149,7 @@ class Parser:
                 'name': row_values[1].text,
                 'quantity': row_values[2].text,
                 'measure': row_values[3].text,
-                'notice': row_values[4].text if len(row_values) >= 5 else None,
+                'notice': row_values[4].text.replace('\\r\\n', '') if len(row_values) >= 5 else None,
             })
         return items
 
@@ -226,5 +226,6 @@ class Parser:
             'fio': main_report_parserd_data['fio'],
             'publication_date': main_report_parserd_data['conditions']['publication_date'],
             'attachments': tender_conditions_parsed_data['attachments'],
+            'link': item['link']
         }
         return tender

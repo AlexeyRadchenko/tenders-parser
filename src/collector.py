@@ -75,6 +75,26 @@ class Collector:
         else:
             return None
 
+    def send_to_db(self, tender_data):
+        model = self.mapper.map(tender_data)
+        print(model)
+
+        short_model = {
+            '_id': model['id'],
+            'number': model['number'],
+            'link': model['href'],
+            'submissionStartDateTime': model['submissionStartDateTime'],
+        }
+
+        # добавляем/обновляем в MongoDB
+
+        self.repository.upsert(short_model)
+        print('Upserted in MongoDB')
+        """
+        # отправляем в RabbitMQ
+        self.rabbitmq.publish(model)
+        print('Published to RabbitMQ')"""
+
     def process_tender(self, item):
         """
         Метод обработки тендера
@@ -97,27 +117,12 @@ class Collector:
                     item['link'] = dbmodel['link']
                     tender_data_html = self.http.get_tender_data(item['link'])
                     tender_data = self.parser.get_tender_data(tender_data_html, item)
+                    self.send_to_db(tender_data)
             else:
                 return None
         else:
-            tender_data_html = self.http.get_tender_data(item['link'])
-            tender_data = self.parser.get_tender_data(tender_data_html, item)
-
-        model = self.mapper.map(tender_data)
-        print(model)
-
-        short_model = {
-            '_id': model['id'],
-            'number': model['number'],
-            'link': model['href'],
-            'submissionStartDateTime': model['submissionStartDateTime'],
-        }
-
-        # добавляем/обновляем в MongoDB
-
-        self.repository.upsert(short_model)
-        print('Upserted in MongoDB')
-        """
-        # отправляем в RabbitMQ
-        self.rabbitmq.publish(model)
-        print('Published to RabbitMQ')"""
+            dbmodel = self.repository.get_one(itemp['id'])
+            if not dbmodel:
+                tender_data_html = self.http.get_tender_data(item['link'])
+                tender_data = self.parser.get_tender_data(tender_data_html, item)
+                self.send_to_db(tender_data)
