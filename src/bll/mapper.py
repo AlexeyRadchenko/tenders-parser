@@ -55,7 +55,7 @@ class Mapper:
         """
         Функция маппинга итоговой модели
         """
-
+        print(item['sub_start_date'])
         model = {
             # Идентификатор тендера (Тендер+Лот)
             # Для каждого лота в тендере создается отдельная модель
@@ -98,7 +98,7 @@ class Mapper:
                 item['sub_close_date'][0]) if item.get('sub_close_date') else None,
             # Дата начала подачи заявок UNIX EPOCH (UTC)
             'submissionStartDateTime': self.tools.get_utc_epoch(
-                item['sub_start_date'][0]) if item.get('sub_start_date') else None,
+                item['sub_start_date']) if item.get('sub_start_date') else None,
             'tenderSearch': self.get_tender_search(item),
             # Дата маппинга модели в UNIX EPOCH (UTC) (milliseconds)
             'timestamp': self.tools.get_utc(),
@@ -358,7 +358,7 @@ class Mapper:
                 )
             ).add_general(
                 lambda f: f.set_properties(
-                    name='Quantity',
+                    name='MaxPrice',
                     displayName='Начальная цена заказа',
                     value=model['maxPrice'] if model.get('MaxPrice') else '',
                     type=FieldType.String,
@@ -374,9 +374,81 @@ class Mapper:
                 )
             ).add_general(
                 lambda f: f.set_properties(
-                    name='PaymentTerms',
+                    name='deliveryTerms',
                     displayName='Условия и сроки поставки',
-                    value=item['delivery_terms'] if item.get('payment_terms') else '',
+                    value=item['delivery_terms'] if item.get('delivery_terms') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='PaymentTerms',
+                    displayName='Условия и сроки оплаты',
+                    value=item['tender_conditions']['payment_terms'] if item['tender_conditions'].get('payment_terms') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='RequirementsForBidders',
+                    displayName='Требования к участникам торгов',
+                    value=item['tender_conditions']['requirements_bidders'] if item['tender_conditions'].get('requirements_bidders') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='PriceTerms',
+                    displayName='Цена',
+                    value=item['tender_conditions']['price_terms'] if item['tender_conditions'].get('price_terms') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='SubTimeTerms',
+                    displayName='Время подачи ценового предложения',
+                    value=item['tender_conditions']['sub_time_terms'] if item['tender_conditions'].get('sub_time_terms') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='ContractSignTime',
+                    displayName='Срок заключения контракта',
+                    value=item['tender_conditions']['contract_sign_time'] if item['tender_conditions'].get('contract_sign_time') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='PriceBiddersTerms',
+                    displayName='Требование к цене',
+                    value=item['tender_conditions']['price_bidders_terms'] if item['tender_conditions'].get('price_bidders_terms') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='InfoBidders',
+                    displayName='Информация для поставщиков',
+                    value=item['tender_conditions']['info_bidders'] if item['tender_conditions'].get('info_bidders') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='AdditionalTerms',
+                    displayName='Дополнительные условия',
+                    value=item['tender_conditions']['additional_terms'] if item['tender_conditions'].get('additional_terms') else '',
+                    type=FieldType.String,
+                    modifications=[]
+                )
+            ).add_general(
+                lambda f: f.set_properties(
+                    name='DeliveryRequirements',
+                    displayName='Требования к поставке',
+                    value=item['tender_conditions']['delivery_requirements'] if item['tender_conditions'].get('delivery_requirements') else '',
                     type=FieldType.String,
                     modifications=[]
                 )

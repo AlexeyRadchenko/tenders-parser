@@ -184,6 +184,15 @@ class Parser:
         tender_conditions = {
             'delivery_place': self.find_tender_conditions_row(table_rows, 'Место поставки'),
             'delivery_terms': self.find_tender_conditions_row(table_rows, 'Условия и сроки поставки'),
+            'payment_terms': self.find_tender_conditions_row(table_rows, 'Условия и сроки оплаты'),
+            'requirements_bidders': self.find_tender_conditions_row(table_rows, 'Требования к участникам торгов'),
+            'price_terms': self.find_tender_conditions_row(table_rows, 'Цена'),
+            'sub_time_terms': self.find_tender_conditions_row(table_rows, 'Время подачи ценового предложения'),
+            'contract_sign_time': self.find_tender_conditions_row(table_rows, 'Срок заключения контракта'),
+            'price_bidders_terms': self.find_tender_conditions_row(table_rows, 'Требование к цене'),
+            'info_bidders': self.find_tender_conditions_row(table_rows, 'Информация для поставщиков'),
+            'additional_terms': self.find_tender_conditions_row(table_rows, 'Дополнительные условия'),
+            'delivery_requirements': self.find_tender_conditions_row(table_rows, 'Требования к поставке'),
             'attachments': self.find_attachments_from_tender_conditions(table_rows, pub_date),
         }
         return tender_conditions
@@ -218,14 +227,14 @@ class Parser:
             'delivery_place': tender_conditions_parsed_data['delivery_place'],
             'delivery_terms': tender_conditions_parsed_data['delivery_terms'],
             'positions': tender_objects_parsed_data,
-            'sub_start_date': self.tools.get_utc_epoch(
-                item['sub_start_date']) if item['sub_start_date'] else main_report_parserd_data['conditions']['sub_start_date'],
+            'sub_start_date': item['sub_start_date'] if item['sub_start_date'] else main_report_parserd_data['conditions']['sub_start_date'][0],
             'sub_close_date': main_report_parserd_data['conditions']['sub_close_date'],
             'scoring_date': main_report_parserd_data['conditions']['score_date'],
             'sub_order': main_report_parserd_data['conditions']['info'],
             'fio': main_report_parserd_data['fio'],
             'publication_date': main_report_parserd_data['conditions']['publication_date'],
             'attachments': tender_conditions_parsed_data['attachments'],
-            'link': item['link']
+            'link': item['link'],
+            'tender_conditions': tender_conditions_parsed_data,
         }
         return tender
