@@ -15,6 +15,10 @@ class MongoRepository:
         result = self.collection.find_one({'_id': item_id})
         return result
 
+    def get_model_for_update(self, item_id):
+        result = self.collection.find_one({'_id': {'$in': ['ТН-' + item_id, 'ЗП-' + item_id, 'РД-' + item_id]}})
+        return result
+
     def upsert(self, shortmodel):
         """
         Вставка/обновление записи в базе (update+insert=upsert)

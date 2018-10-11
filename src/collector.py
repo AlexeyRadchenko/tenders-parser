@@ -62,20 +62,7 @@ class Collector:
             if count == self.quantity:
                 break
 
-    def get_db_model_for_rd_item(self, item_id):
-        tn_dbmodel = self.repository.get_one('ТН-' + item_id)
-        zp_dbmodel = self.repository.get_one('ЗП-' + item_id)
-        rd_dbmodel = self.repository.get_one('РД-' + item_id)
-        if tn_dbmodel:
-            return tn_dbmodel
-        elif zp_dbmodel:
-            return zp_dbmodel
-        elif rd_dbmodel:
-            return rd_dbmodel
-        else:
-            return None
-
-    def send_to_db(self, tender_data):
+    def send_to_db_and_queue(self, tender_data):
         model = self.mapper.map(tender_data)
         print(model)
 
@@ -106,10 +93,9 @@ class Collector:
         """
         # Получение HTML страницы с данными тендера
         if not item.get('link'):
-            dbmodel = self.get_db_model_for_rd_item(item['id'])
+            dbmodel = self.repository.get_model_for_update(item['id'])
             if dbmodel:
-                dbmodel_time = Tools.get_utc_epoch(
-                    dbmodel['submissionStartDateTime']) if dbmodel.get('submissionStartDateTime') else 0
+                dbmodel_time = dbmodel['submissionStartDateTime'] if dbmodel.get('submissionStartDateTime') else 0
                 item_time = Tools.get_utc_epoch(item['sub_start_date'])
                 if dbmodel_time <= item_time:
                     item['id'] = dbmodel['_id']
@@ -117,12 +103,12 @@ class Collector:
                     item['link'] = dbmodel['link']
                     tender_data_html = self.http.get_tender_data(item['link'])
                     tender_data = self.parser.get_tender_data(tender_data_html, item)
-                    self.send_to_db(tender_data)
+                    self.send_to_db_and_queue(tender_data)
             else:
                 return None
         else:
-            dbmodel = self.repository.get_one(itemp['id'])
+            dbmodel = self.repository.get_one(item['id'])
             if not dbmodel:
                 tender_data_html = self.http.get_tender_data(item['link'])
                 tender_data = self.parser.get_tender_data(tender_data_html, item)
-                self.send_to_db(tender_data)
+                self.send_to_db_and_queue(tender_data)
