@@ -164,9 +164,9 @@ class Parser:
         if 'KB' in size_str:
             return int(float(size_str.rstrip(' KB').replace(',', '.')) * 1000)
         if 'MB' in size_str:
-            return int(float(size_str.rstrip(' KB').replace(',', '.')) * 1000000)
+            return int(float(size_str.rstrip(' MB').replace(',', '.')) * 1000000)
         if 'GB' in size_str:
-            return int(float(size_str.rstrip(' KB').replace(',', '.')) * 1000000000)
+            return int(float(size_str.rstrip(' GB').replace(',', '.')) * 1000000000)
 
     def find_attachments_from_tender_conditions(self, table_rows, pub_date):
         donwload_url = 'https://etp.tatneft.ru/pls/tzp/wwv_flow.show?' \
