@@ -160,6 +160,14 @@ class Parser:
                 return row_data[1]
         return None
 
+    def size_convert(self, size_str):
+        if 'KB' in size_str:
+            return int(float(size_str.rstrip(' KB').replace(',', '.')) * 1000)
+        if 'MB' in size_str:
+            return int(float(size_str.rstrip(' KB').replace(',', '.')) * 1000000)
+        if 'GB' in size_str:
+            return int(float(size_str.rstrip(' KB').replace(',', '.')) * 1000000000)
+
     def find_attachments_from_tender_conditions(self, table_rows, pub_date):
         donwload_url = 'https://etp.tatneft.ru/pls/tzp/wwv_flow.show?' \
                        'p_flow_id=220&p_flow_step_id=2155&' \
@@ -175,7 +183,7 @@ class Parser:
                     'url': donwload_url.format(self.get_file_id(link.attrs['href'])),
                     'real_name': real,
                     'publication_date': pub_date,
-                    'size': size
+                    'size': self.size_convert(size)
                 })
         return attachments
 

@@ -18,12 +18,12 @@ class Collector:
         self.parser = Parser(base_url)
         self.publish_date = publish_date
         self.quantity = quantity
-
+        """
         self.repository = MongoRepository(mongodb['host'],
                                           mongodb['port'],
                                           mongodb['database'],
                                           mongodb['collection'])
-        """
+
         self.rabbitmq = RabbitMqProvider(rabbitmq['host'],
                                          rabbitmq['port'],
                                          rabbitmq['username'],
@@ -74,10 +74,10 @@ class Collector:
         }
 
         # добавляем/обновляем в MongoDB
-
+        """
         self.repository.upsert(short_model)
         print('Upserted in MongoDB')
-        """
+
         # отправляем в RabbitMQ
         self.rabbitmq.publish(model)
         print('Published to RabbitMQ')"""
@@ -93,8 +93,9 @@ class Collector:
         """
         # Получение HTML страницы с данными тендера
         if not item.get('link'):
-            dbmodel = self.repository.get_model_for_update(item['id'])
-            if dbmodel:
+            #dbmodel = self.repository.get_model_for_update(item['id'])
+            #if dbmodel:
+            if False:
                 dbmodel_time = dbmodel['submissionStartDateTime'] if dbmodel.get('submissionStartDateTime') else 0
                 item_time = Tools.get_utc_epoch(item['sub_start_date'])
                 if dbmodel_time <= item_time:
@@ -107,8 +108,9 @@ class Collector:
             else:
                 return None
         else:
-            dbmodel = self.repository.get_one(item['id'])
-            if not dbmodel:
+            #dbmodel = self.repository.get_one(item['id'])
+            #if not dbmodel:
+            if True:
                 tender_data_html = self.http.get_tender_data(item['link'])
                 tender_data = self.parser.get_tender_data(tender_data_html, item)
                 self.send_to_db_and_queue(tender_data)

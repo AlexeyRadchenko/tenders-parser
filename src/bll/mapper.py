@@ -293,19 +293,19 @@ class Mapper:
                     )
                 ).add_field(
                     Field(
-                        name='AcceptOrderEndDateTime',
-                        displayName='Дата окончания приема предложений',
-                        value=model['submissionCloseDateTime'],
-                        type=FieldType.DateTime,
-                        modifications=[Modification.Calendar]
-                    )
-                ).add_field(
-                    Field(
                         name='ScoringStartDateTime',
                         displayName='Дата начала приема предложений',
                         value=model['submissionStartDateTime'],
                         type=FieldType.DateTime,
                         modifications=[]
+                    )
+                ).add_field(
+                    Field(
+                        name='AcceptOrderEndDateTime',
+                        displayName='Дата окончания приема предложений',
+                        value=model['submissionCloseDateTime'],
+                        type=FieldType.DateTime,
+                        modifications=[Modification.Calendar]
                     )
                 ).add_field(        #
                     Field(

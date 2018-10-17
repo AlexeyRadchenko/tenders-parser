@@ -104,7 +104,7 @@ class Http:
             self.init_request_form_params['p_widget_num_return'] = str(quantity_items)
             last_show_item_num = 1
             while True:
-                print(last_show_item_num)
+                #print(last_show_item_num)
                 p_widget_action_mod = 'pgR_min_row={0}max_rows={1}rows_fetched={1}'.format(
                     last_show_item_num, quantity_items
                 )
