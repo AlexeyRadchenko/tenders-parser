@@ -57,7 +57,7 @@ class Parser:
 
     @staticmethod
     def get_attachment_real_name_display_name_size(name):
-        size = re.search(r'\(.+\)', name)
+        size = re.search(r'[^\(]+\s?\w+\)$', name)
         if size:
             size = size.group(0)
         else:
