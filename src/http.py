@@ -10,6 +10,11 @@ class Http:
         else:
             self.proxy = None
 
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.143 Safari/537.36',
+        'Referer': 'https://tenders.irkutskoil.ru/'
+    }
+
     source_url_list = [
         'https://tenders.irkutskoil.ru/tender_result.php',
         'https://tenders.irkutskoil.ru/tenders.php',
@@ -44,11 +49,12 @@ class Http:
                 search_type = 'arc_after'
             # собираем сведения об АКТИВНЫХ тендерах в верстке ПОСЛЕ 17.07.2017, т.к. одна странница делаем запрос
             elif i == 1:
-                r = get(url, proxies=self.proxy)
+                r = get(url, proxies=self.proxy, headers=self.headers)
                 res = retry(r, 5, 100)
                 if res is not None and res.status_code == 200:
                     html = BeautifulSoup(res.content, 'lxml')
                     items_table = html.find('table', {'class': 'lot_list'})
+                    print(items_table)
                     yield {
                         'type': 'active_after',
                         'items': [{
