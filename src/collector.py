@@ -61,7 +61,7 @@ class Collector:
             if count == self.quantity:
                 break
 
-    def process_tender(self, item, status=[]):
+    def process_tender(self, item):
         """
         Метод обработки тендера
         Последовательность действий:

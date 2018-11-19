@@ -24,7 +24,7 @@ class Http:
         """генератор списков тендеров"""
         for url in self.source_url_list:
             while True:
-                print(self.init_params)
+                #print(self.init_params)
                 r = get(url, proxies=self.proxy, params=self.init_params)
                 res = retry(r, 5, 100)
                 if res is not None and res.status_code == 200:
